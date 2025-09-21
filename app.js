@@ -1,4 +1,4 @@
-const stats = {
+let stats = JSON.parse(localStorage.getItem("stats")) || {
   strength: 10,
   agility: 10,
   endurance: 10,
@@ -11,6 +11,16 @@ const quests = [
   { text: "Пройти 2 км пешком", stat: "endurance", reward: 1 },
   { text: "Прочитать 5 страниц книги", stat: "intelligence", reward: 1 }
 ];
+
+function saveStats() {
+  localStorage.setItem("stats", JSON.stringify(stats));
+}
+
+function updateStats() {
+  for (let key in stats) {
+    document.getElementById(key).textContent = stats[key];
+  }
+}
 
 function renderQuests() {
   const questList = document.getElementById("quest-list");
@@ -26,8 +36,16 @@ function renderQuests() {
 function completeQuest(i) {
   const quest = quests[i];
   stats[quest.stat] += quest.reward;
-  document.getElementById(quest.stat).textContent = stats[quest.stat];
+  updateStats();
+  saveStats();
   alert(`+${quest.reward} к ${quest.stat}`);
 }
 
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// Первоначальная отрисовка
+updateStats();
 renderQuests();
