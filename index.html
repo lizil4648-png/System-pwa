@@ -2,39 +2,42 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Система</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="app.js"></script>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <div class="system-window">
-    <h1 class="glow">СИСТЕМА</h1>
+  <div class="container">
+    <h1 class="glow">С И С Т Е М А</h1>
+
     <nav>
-      <button onclick="showTab('stats')">Статы</button>
-      <button onclick="showTab('skills')">Навыки</button>
-      <button onclick="showTab('quests')">Задания</button>
+      <button onclick="showScreen('stats')">📊 Статистика</button>
+      <button onclick="showScreen('skills')">⚔️ Навыки</button>
+      <button onclick="showScreen('quests')">📜 Задания</button>
     </nav>
 
-    <div id="stats" class="tab active">
-      <h2>Статистика</h2>
+    <section id="stats" class="screen active">
+      <h2>Статы</h2>
       <ul>
-        <li>Сила: <span id="str">10</span></li>
-        <li>Ловкость: <span id="agi">10</span></li>
-        <li>Живучесть: <span id="vit">10</span></li>
-        <li>Интеллект: <span id="int">10</span></li>
+        <li>Сила: <span id="strength">10</span></li>
+        <li>Ловкость: <span id="agility">10</span></li>
+        <li>Живучесть: <span id="endurance">10</span></li>
+        <li>Интеллект: <span id="intelligence">10</span></li>
       </ul>
-    </div>
+    </section>
 
-    <div id="skills" class="tab">
+    <section id="skills" class="screen">
       <h2>Навыки</h2>
-      <p>Здесь будут появляться изученные навыки.</p>
-    </div>
+      <p>Пока навыков нет...</p>
+    </section>
 
-    <div id="quests" class="tab">
-      <h2>Задания</h2>
-      <div id="questList"></div>
-    </div>
+    <section id="quests" class="screen">
+      <h2>Ежедневные задания</h2>
+      <ul id="quest-list"></ul>
+    </section>
   </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
