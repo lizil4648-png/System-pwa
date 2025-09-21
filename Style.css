@@ -1,21 +1,56 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: #0a0a0f;
+  background: radial-gradient(circle at center, #0a0a0f, #000);
   color: #f0f0f0;
 }
 
 .container {
   padding: 20px;
+  max-width: 600px;
+  margin: auto;
 }
 
 h1 {
   text-align: center;
-  color: #00e6e6;
+  font-size: 2.2em;
+  margin-bottom: 20px;
 }
 
-h2 {
-  color: #ffcc00;
+.glow {
+  color: #00e6e6;
+  text-shadow: 0 0 8px #00ffff, 0 0 20px #00cccc;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+nav button {
+  background: transparent;
+  border: 2px solid #00e6e6;
+  color: #00e6e6;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+nav button:hover {
+  background: #00e6e6;
+  color: #000;
+  box-shadow: 0 0 10px #00ffff;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
 }
 
 ul {
@@ -25,7 +60,26 @@ ul {
 
 li {
   margin: 8px 0;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 230, 230, 0.4);
+}
+
+button {
+  margin-left: 10px;
+  background: #ffcc00;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffaa00;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }
