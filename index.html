@@ -1,73 +1,373 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Система</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #0a001f, #1a0033);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 0 15px #9f6cff;
+    }
+    nav {
+      margin: 10px 0;
+    }
+    nav button {
+      background: #2a0055;
+      color: white;
+      border: none;
+      margin: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+    nav button:hover {
+      background: #4d00aa;
+    }
+    section { display: none; padding: 20px; }
+    section.active { display: block; }
 
-  <!-- Стили -->
-  <link rel="stylesheet" href="styles.css" />
+    .stats, .skills, .quests {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 15px;
+      width: 200px;
+      box-shadow: 0 0 10px #4d00aa;
+    }
 
-  <!-- Favicon для вкладки браузера -->
-  <link rel="icon" type="image/png" href="favicon.png" />
+    .timer {
+      margin-top: 10px;
+      font-size: 14px;
+    }
 
-  <!-- Иконка для PWA на телефон -->
-  <link rel="apple-touch-icon" href="favicon.png" sizes="512x512" />
+    /* Календарь */
+    .calendar-controls {
+      margin-bottom: 15px;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .day {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.1);
+      font-size: 12px;
+    }
+    .red { background: red; }
+    .yellow { background: orange; }
+    .blue { background: royalblue; }
+    .green { background: green; }
 
-  <!-- PWA манифест -->
-  <link rel="manifest" href="manifest.json" />
+    .year-view {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .month-mini {
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 5px;
+    }
+    .month-mini h4 { margin: 5px 0; font-size: 14px; }
+    .mini-calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .mini-day {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Логотип / картинка -->
-    <img src="arise.png" alt="Arise" class="logo" />
+  <header>📖 Система</header>
+  <nav>
+    <button onclick="showSection('stats')">Статистика</button>
+    <button onclick="showSection('skills')">Навыки</button>
+    <button onclick="showSection('quests')">Задания</button>
+    <button onclick="showSection('calendar')">Календарь</button>
+  </nav>
 
-    <!-- Кнопки -->
-    <h1>Система</h1>
-    <div class="menu">
-      <button onclick="showPage('stats')">Статистика</button>
-      <button onclick="showPage('skills')">Навыки</button>
-      <button onclick="showPage('quests')">Задания</button>
+  <!-- Статы -->
+  <section id="stats" class="active">
+    <h2>Статистика</h2>
+    <div class="stats" id="statsList"></div>
+  </section>
+
+  <!-- Навыки -->
+  <section id="skills">
+    <h2>Навыки</h2>
+    <div class="skills" id="skillsList"></div>
+  </section>
+
+  <!-- Задания -->
+  <section id="quests">
+    <h2>Ежедневные задания</h2>
+    <div class="quests" id="questsList"></div>
+  </section>
+
+  <!-- Календарь -->
+  <section id="calendar">
+    <h2>Календарь прогресса</h2>
+    <div class="calendar-controls">
+      <button onclick="switchCalendar('month')">Месяц</button>
+      <button onclick="switchCalendar('year')">Год</button>
     </div>
-  </div>
-
-  <!-- Разделы -->
-  <div id="content">
-    <section id="stats" class="page hidden">
-      <h2>Статистика</h2>
-      <p>Сила: 10</p>
-      <p>Ловкость: 8</p>
-      <p>Живучесть: 12</p>
-      <p>Интеллект: 14</p>
-      <p>Духовность: 5</p>
-    </section>
-
-    <section id="skills" class="page hidden">
-      <h2>Навыки</h2>
-      <ul>
-        <li>Физика</li>
-        <li>Математика</li>
-        <li>Английский</li>
-        <li>Ораторство</li>
-        <li>...</li>
-      </ul>
-    </section>
-
-    <section id="quests" class="page hidden">
-      <h2>Задания</h2>
-      <ul>
-        <li>Сделать упражнение ( +1 Сила )</li>
-        <li>Выучить аят ( +1 Духовность )</li>
-        <li>Прочитать 10 страниц ( +1 Интеллект )</li>
-      </ul>
-    </section>
-  </div>
+    <div id="monthView"></div>
+    <div id="yearView" style="display:none;"></div>
+  </section>
 
   <script>
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-      document.getElementById(pageId).classList.remove('hidden');
+    // ===== ДАННЫЕ =====
+    const stats = {
+      Сила: 0,
+      Ловкость: 0,
+      Живучесть: 0,
+      Интеллект: 0,
+      Духовность: 0
+    };
+
+    const skills = {
+      "Физика": "Интеллект",
+      "Математика": "Интеллект",
+      "Химия": "Интеллект",
+      "Рукопашный бой": "Сила",
+      "Гибкость": "Ловкость",
+      "Скорость": "Ловкость",
+      "Английский": "Интеллект",
+      "Ораторство": "Интеллект",
+      "Копирайтинг": "Интеллект",
+      "Нейронка": "Интеллект",
+      "Финансовая грамотность": "Интеллект",
+      "Изящность": "Ловкость",
+      "Дисциплина": "Живучесть",
+      "Стрессоустойчивость": "Живучесть",
+      "Критическое мышление": "Живучесть",
+      "Коран": "Духовность",
+      "Ақида": "Духовность",
+      "Фиқх": "Духовность",
+      "Тасаууф": "Духовность",
+      "Рисование": "Интеллект",
+      "Скорочтение": "Интеллект",
+      "Чистоплотность": "Живучесть"
+    };
+
+    const fixedQuests = ["Фаджр намаз", "Зухр намаз", "Аср намаз", "Магриб намаз", "Иша намаз"];
+
+    // ===== ХРАНИЛКА =====
+    let data = JSON.parse(localStorage.getItem("systemData")) || { stats, progress:{} };
+
+    function saveData() {
+      localStorage.setItem("systemData", JSON.stringify(data));
     }
+
+    // ===== СТАТЫ =====
+    function renderStats() {
+      const list = document.getElementById("statsList");
+      list.innerHTML = "";
+      for (let s in data.stats) {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.textContent = `${s}: ${data.stats[s]}`;
+        list.appendChild(div);
+      }
+    }
+
+    // ===== НАВЫКИ + ТАЙМЕР =====
+    let timers = {};
+    function renderSkills() {
+      const list = document.getElementById("skillsList");
+      list.innerHTML = "";
+      for (let sk in skills) {
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<b>${sk}</b><br>
+          Стат: ${skills[sk]}<br>
+          <button onclick="toggleTimer('${sk}')">Старт / Стоп</button>
+          <div class="timer" id="timer-${sk}">00:00</div>`;
+        list.appendChild(div);
+      }
+    }
+
+    function toggleTimer(skill) {
+      if (timers[skill]?.running) {
+        // стоп
+        timers[skill].running = false;
+        let minutes = Math.floor((Date.now()-timers[skill].start)/60000);
+        let stat = skills[skill];
+        data.stats[stat] += Math.max(1, Math.floor(minutes/5));
+        saveData();
+        renderStats();
+      } else {
+        timers[skill] = { running:true, start: Date.now() };
+        tick(skill);
+      }
+    }
+
+    function tick(skill) {
+      if (timers[skill]?.running) {
+        let elapsed = Date.now()-timers[skill].start;
+        let m = Math.floor(elapsed/60000);
+        let s = Math.floor((elapsed%60000)/1000);
+        document.getElementById("timer-"+skill).textContent =
+          String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+        setTimeout(()=>tick(skill),1000);
+      }
+    }
+
+    // ===== ЗАДАНИЯ =====
+    function renderQuests() {
+      const list = document.getElementById("questsList");
+      list.innerHTML = "";
+      let today = new Date().toDateString();
+      if (!data.progress[today]) data.progress[today] = { quests:{} };
+
+      // фиксированные
+      fixedQuests.forEach(q=>{
+        addQuest(list,q,"Духовность",today);
+      });
+
+      // иногда ораза
+      if (Math.random()<0.1) addQuest(list,"Ораза","Духовность",today);
+
+      // 2 случайных навыка
+      let keys = Object.keys(skills);
+      for (let i=0;i<2;i++) {
+        let rand = keys[Math.floor(Math.random()*keys.length)];
+        addQuest(list,"Практика: "+rand,skills[rand],today);
+      }
+    }
+
+    function addQuest(list,name,stat,today) {
+      let div = document.createElement("div");
+      div.className = "card";
+      let done = data.progress[today].quests[name];
+      div.innerHTML = `<b>${name}</b><br>
+        <button onclick="completeQuest('${today}','${name}','${stat}')">
+          ${done?"Выполнено":"Сделать"}
+        </button>`;
+      list.appendChild(div);
+    }
+
+    function completeQuest(day,name,stat) {
+      data.progress[day].quests[name] = true;
+      data.stats[stat] += 1;
+      saveData();
+      renderStats();
+      renderQuests();
+      renderMonthCalendar();
+      renderYearCalendar();
+    }
+
+    // ===== КАЛЕНДАРЬ =====
+    function switchCalendar(mode) {
+      document.getElementById("monthView").style.display = mode==="month"?"block":"none";
+      document.getElementById("yearView").style.display = mode==="year"?"grid":"none";
+    }
+
+    function renderMonthCalendar() {
+      let cont = document.getElementById("monthView");
+      cont.innerHTML = "";
+      let now = new Date();
+      let year = now.getFullYear();
+      let month = now.getMonth();
+      let first = new Date(year,month,1);
+      let last = new Date(year,month+1,0);
+      let grid = document.createElement("div");
+      grid.className = "calendar";
+      for (let d=1; d<=last.getDate(); d++) {
+        let day = new Date(year,month,d).toDateString();
+        let div = document.createElement("div");
+        div.className="day";
+        div.textContent = d;
+        let pct = getCompletion(day);
+        div.classList.add(colorByPct(pct));
+        grid.appendChild(div);
+      }
+      cont.appendChild(grid);
+    }
+
+    function renderYearCalendar() {
+      let cont = document.getElementById("yearView");
+      cont.innerHTML = "";
+      let now = new Date();
+      let year = now.getFullYear();
+      for (let m=0;m<12;m++) {
+        let wrap = document.createElement("div");
+        wrap.className="month-mini";
+        let h = document.createElement("h4");
+        h.textContent = new Date(year,m).toLocaleString("ru",{month:"long"});
+        wrap.appendChild(h);
+        let grid = document.createElement("div");
+        grid.className="mini-calendar";
+        let days = new Date(year,m+1,0).getDate();
+        for (let d=1;d<=days;d++) {
+          let day = new Date(year,m,d).toDateString();
+          let div = document.createElement("div");
+          div.className="mini-day "+colorByPct(getCompletion(day));
+          grid.appendChild(div);
+        }
+        wrap.appendChild(grid);
+        cont.appendChild(wrap);
+      }
+    }
+
+    function getCompletion(day) {
+      if (!data.progress[day]) return 0;
+      let quests = data.progress[day].quests;
+      let total = Object.keys(quests).length;
+      if (total===0) return 0;
+      let done = Object.values(quests).filter(v=>v).length;
+      return done/total;
+    }
+
+    function colorByPct(p) {
+      if (p===0) return "";
+      if (p<=0.2) return "red";
+      if (p<=0.5) return "yellow";
+      if (p<=0.8) return "blue";
+      return "green";
+    }
+
+    // ===== НАВИГАЦИЯ =====
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // ===== ЗАПУСК =====
+    renderStats();
+    renderSkills();
+    renderQuests();
+    renderMonthCalendar();
+    renderYearCalendar();
   </script>
 </body>
 </html>
