@@ -3,166 +3,234 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Система</title>
-
-  <!-- PWA настройки -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#00bfff">
-
-  <!-- Стили -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d0d1a;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1a1a33;
+      padding: 10px;
+    }
+    header button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #6a5acd;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .page {
+      display: none;
+      padding: 20px;
+    }
+    .active {
+      display: block;
+    }
+    .quest-box {
+      border: 1px solid #6a5acd;
+      padding: 15px;
+      margin: 15px auto;
+      width: 70%;
+      border-radius: 10px;
+      background: rgba(106, 90, 205, 0.1);
+    }
+    .title {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+    .xp-bar {
+      background:#444; 
+      border-radius:10px; 
+      width:80%; 
+      height:20px; 
+      margin: 10px auto;
+    }
+    .xp-fill {
+      background:#6a5acd; 
+      width:0%; 
+      height:100%; 
+      border-radius:10px;
+      transition: width 0.5s;
+    }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <!-- 🔹 Логотип -->
-    <img src="images/arise.png" alt="Arise logo" class="logo">
+  <header>
+    <button onclick="showPage('stats')">📊 Статистика</button>
+    <button onclick="showPage('skills')">📘 Навыки</button>
+    <button onclick="showPage('quests')">🎯 Задания</button>
+  </header>
 
-    <h1 class="glow">СИСТЕМА</h1>
-    <nav>
-      <button onclick="showScreen('stats')">Статистика</button>
-      <button onclick="showScreen('skills')">Навыки</button>
-      <button onclick="showScreen('quests')">Задания</button>
-    </nav>
+  <!-- Статистика -->
+  <section id="stats" class="page active">
+    <h2 class="title">Статистика</h2>
+    <p><b>Уровень:</b> <span id="level">1</span></p>
+    <p><b>Опыт:</b> <span id="xp">0</span>/<span id="xpNeeded">50</span></p>
 
-    <main>
-      <!-- Экран статистики -->
-      <section id="stats" class="screen active">
-        <h2>Статистика</h2>
-        <ul id="stats-list">
-          <li>Сила: <span id="stat-strength">10</span></li>
-          <li>Ловкость: <span id="stat-agility">10</span></li>
-          <li>Живучесть: <span id="stat-vitality">10</span></li>
-          <li>Интеллект: <span id="stat-intelligence">10</span></li>
-        </ul>
-      </section>
+    <div class="xp-bar">
+      <div id="xp-bar" class="xp-fill"></div>
+    </div>
 
-      <!-- Экран навыков -->
-      <section id="skills" class="page hidden">
-  <h2 class="title">Навыки</h2>
+    <h3>Характеристики</h3>
+    <p>⚔️ Сила: <span id="strength">5</span></p>
+    <p>🏃 Ловкость: <span id="agility">5</span></p>
+    <p>🧠 Интеллект: <span id="intelligence">5</span></p>
+    <p>❤️ Живучесть: <span id="vitality">5</span></p>
+  </section>
 
-  <!-- Список навыков -->
-  <ul id="skills-list" class="skill-list"></ul>
+  <!-- Навыки -->
+  <section id="skills" class="page">
+    <h2 class="title">Навыки</h2>
+    <ul id="skills-list">
+      <li>Пример навыка: Медитация</li>
+    </ul>
+  </section>
 
-  <!-- Добавление нового навыка -->
-  <div class="add-skill">
-    <input type="text" id="new-skill" placeholder="Добавить навык">
-    <button onclick="addSkill()">Добавить</button>
-  </div>
-</section>
+  <!-- Задания -->
+  <section id="quests" class="page">
+    <h2 class="title">Задания</h2>
+    <div id="daily-quest" class="quest-box"></div>
+    <button id="complete-btn" onclick="completeQuest()">Выполнить</button>
+  </section>
 
-<script>
-  let skills = JSON.parse(localStorage.getItem("skills")) || [];
-  let timers = {}; // хранение интервалов для каждого навыка
+  <script>
+    // ====== Переменные ======
+    let level = parseInt(localStorage.getItem("level")) || 1;
+    let xp = parseInt(localStorage.getItem("xp")) || 0;
+    let stats = JSON.parse(localStorage.getItem("stats")) || {
+      strength: 5,
+      agility: 5,
+      intelligence: 5,
+      vitality: 5
+    };
 
-  function renderSkills() {
-    const list = document.getElementById("skills-list");
-    list.innerHTML = "";
-    skills.forEach((skill, index) => {
-      let active = skill.startTime ? "⏱ Идёт тренировка..." : "";
-      list.innerHTML += `
-        <li class="skill-item">
-          <b>${skill.name}</b> | XP: ${skill.xp} 
-          <span id="timer-${index}">${active}</span><br>
-          <button onclick="startTimer(${index})">Старт</button>
-          <button onclick="stopTimer(${index})">Стоп</button>
-        </li>
-      `;
-    });
-  }
+    let skillsQueue = JSON.parse(localStorage.getItem("skillsQueue")) || [
+      { name: "Медитация", quests: ["5 минут медитации", "10 минут медитации"] },
+      { name: "Физ.упражнения", quests: ["10 приседаний", "10 отжиманий"] },
+      { name: "Изучение языка", quests: ["Выучи 5 новых слов", "Повтори слова 10 минут"] }
+    ];
+    let currentDay = parseInt(localStorage.getItem("currentDay")) || 0;
+    let questIndex = parseInt(localStorage.getItem("questIndex")) || 0;
+    let lastCompletedDate = localStorage.getItem("lastCompletedDate") || null;
 
-  function addSkill() {
-    const input = document.getElementById("new-skill");
-    if (input.value.trim() !== "") {
-      skills.push({ name: input.value, xp: 0, startTime: null });
-      input.value = "";
-      saveSkills();
-      renderSkills();
+    // ====== UI обновление ======
+    function updateStatsUI() {
+      let xpNeeded = level * 50;
+      document.getElementById("level").textContent = level;
+      document.getElementById("xp").textContent = xp;
+      document.getElementById("xpNeeded").textContent = xpNeeded;
+
+      let percent = Math.min(100, (xp / xpNeeded) * 100);
+      document.getElementById("xp-bar").style.width = percent + "%";
+
+      document.getElementById("strength").textContent = stats.strength;
+      document.getElementById("agility").textContent = stats.agility;
+      document.getElementById("intelligence").textContent = stats.intelligence;
+      document.getElementById("vitality").textContent = stats.vitality;
     }
-  }
 
-  function startTimer(i) {
-    if (skills[i].startTime) return; // уже идёт
-    skills[i].startTime = Date.now();
-    saveSkills();
-    renderSkills();
+    // ====== Опыт ======
+    function gainXP(amount) {
+      xp += amount;
+      let xpNeeded = level * 50;
 
-    timers[i] = setInterval(() => {
-      let diff = Math.floor((Date.now() - skills[i].startTime) / 1000);
-      document.getElementById(`timer-${i}`).textContent =
-        `⏱ ${Math.floor(diff / 60)}м ${diff % 60}с`;
-    }, 1000);
-  }
+      if (xp >= xpNeeded) {
+        xp -= xpNeeded;
+        level++;
 
-  function stopTimer(i) {
-    if (skills[i].startTime) {
-      let diff = Math.floor((Date.now() - skills[i].startTime) / 1000); // в секундах
-      let xpEarned = Math.max(1, Math.floor(diff / 60)); // минимум 1 XP
-      skills[i].xp += xpEarned;
-      skills[i].startTime = null;
-      clearInterval(timers[i]);
-      saveSkills();
-      renderSkills();
+        let keys = Object.keys(stats);
+        let randomKey = keys[Math.floor(Math.random() * keys.length)];
+        let bonus = Math.floor(Math.random() * 3) + 1;
+        stats[randomKey] += bonus;
+
+        alert(`🎉 Уровень ${level}! +${bonus} к ${translateStat(randomKey)}.`);
+      }
+
+      saveProgress();
+      updateStatsUI();
     }
-  }
 
-  function saveSkills() {
-    localStorage.setItem("skills", JSON.stringify(skills));
-  }
+    function translateStat(statKey) {
+      switch (statKey) {
+        case "strength": return "Силе";
+        case "agility": return "Ловкости";
+        case "intelligence": return "Интеллекту";
+        case "vitality": return "Живучести";
+      }
+    }
 
-  renderSkills();
-</script>
+    // ====== Задания ======
+    function isNewDay() {
+      const today = new Date().toDateString();
+      return lastCompletedDate !== today;
+    }
 
-<style>
-  #skills {
-    text-align: center;
-    padding: 20px;
-  }
-  .skill-list {
-    list-style: none;
-    padding: 0;
-  }
-  .skill-item {
-    margin: 15px 0;
-    padding: 10px;
-    border: 1px solid #444;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.05);
-  }
-  .add-skill {
-    margin-top: 15px;
-  }
-  .add-skill input {
-    padding: 5px;
-  }
-  .add-skill button {
-    margin-left: 5px;
-  }
-</style>
-        <h2>Навыки</h2>
-        <ul id="skills-list">
-          <li>Пусто... пока</li>
-        </ul>
-      </section>
+    function renderQuest() {
+      if (skillsQueue.length === 0) {
+        document.getElementById("daily-quest").innerHTML = "Нет навыков и заданий!";
+        document.getElementById("complete-btn").style.display = "none";
+        return;
+      }
 
-      <!-- Экран заданий -->
-      <section id="quests" class="screen">
-        <h2>Задания</h2>
-        <ul id="quests-list">
-          <li>
-            Сделать упражнение —
-            <button onclick="completeQuest('strength')">Выполнено</button>
-          </li>
-          <li>
-            Прочитать 5 страниц —
-            <button onclick="completeQuest('intelligence')">Выполнено</button>
-          </li>
-        </ul>
-      </section>
-    </main>
-  </div>
+      let skill = skillsQueue[currentDay % skillsQueue.length];
+      let quest = skill.quests[questIndex % skill.quests.length];
 
-  <!-- Скрипт -->
-  <script src="app.js"></script>
+      document.getElementById("daily-quest").innerHTML =
+        `<b>Навык:</b> ${skill.name}<br><b>Задание:</b> ${quest}`;
+
+      if (isNewDay()) {
+        document.getElementById("complete-btn").style.display = "inline-block";
+      } else {
+        document.getElementById("complete-btn").style.display = "none";
+        document.getElementById("daily-quest").innerHTML +=
+          "<br><i>Квест выполнен. Следующий будет завтра!</i>";
+      }
+    }
+
+    function completeQuest() {
+      alert("Квест выполнен! +10 XP 🎉");
+      gainXP(10);
+
+      lastCompletedDate = new Date().toDateString();
+      localStorage.setItem("lastCompletedDate", lastCompletedDate);
+
+      questIndex++;
+      if (questIndex >= skillsQueue[currentDay % skillsQueue.length].quests.length) {
+        questIndex = 0;
+        currentDay++;
+      }
+
+      saveProgress();
+      renderQuest();
+    }
+
+    // ====== Сохранение ======
+    function saveProgress() {
+      localStorage.setItem("level", level);
+      localStorage.setItem("xp", xp);
+      localStorage.setItem("stats", JSON.stringify(stats));
+      localStorage.setItem("skillsQueue", JSON.stringify(skillsQueue));
+      localStorage.setItem("currentDay", currentDay);
+      localStorage.setItem("questIndex", questIndex);
+    }
+
+    // ====== Переключение страниц ======
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // ====== Запуск ======
+    updateStatsUI();
+    renderQuest();
+  </script>
 </body>
 </html>
