@@ -3,41 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Система</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- PWA настройки -->
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00bfff">
+
+  <!-- Стили -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1 class="glow">С И С Т Е М А</h1>
-
+  <div class="app">
+    <h1 class="glow">СИСТЕМА</h1>
     <nav>
-      <button onclick="showScreen('stats')">📊 Статистика</button>
-      <button onclick="showScreen('skills')">⚔️ Навыки</button>
-      <button onclick="showScreen('quests')">📜 Задания</button>
+      <button onclick="showScreen('stats')">Статистика</button>
+      <button onclick="showScreen('skills')">Навыки</button>
+      <button onclick="showScreen('quests')">Задания</button>
     </nav>
 
-    <section id="stats" class="screen active">
-      <h2>Статы</h2>
-      <ul>
-        <li>Сила: <span id="strength">10</span></li>
-        <li>Ловкость: <span id="agility">10</span></li>
-        <li>Живучесть: <span id="endurance">10</span></li>
-        <li>Интеллект: <span id="intelligence">10</span></li>
-      </ul>
-    </section>
+    <main>
+      <!-- Экран статистики -->
+      <section id="stats" class="screen active">
+        <h2>Статистика</h2>
+        <ul id="stats-list">
+          <li>Сила: <span id="stat-strength">10</span></li>
+          <li>Ловкость: <span id="stat-agility">10</span></li>
+          <li>Живучесть: <span id="stat-vitality">10</span></li>
+          <li>Интеллект: <span id="stat-intelligence">10</span></li>
+        </ul>
+      </section>
 
-    <section id="skills" class="screen">
-      <h2>Навыки</h2>
-      <p>Пока навыков нет...</p>
-    </section>
+      <!-- Экран навыков -->
+      <section id="skills" class="screen">
+        <h2>Навыки</h2>
+        <ul id="skills-list">
+          <li>Пусто... пока</li>
+        </ul>
+      </section>
 
-    <section id="quests" class="screen">
-      <h2>Ежедневные задания</h2>
-      <ul id="quest-list"></ul>
-    </section>
+      <!-- Экран заданий -->
+      <section id="quests" class="screen">
+        <h2>Задания</h2>
+        <ul id="quests-list">
+          <li>
+            Сделать упражнение —
+            <button onclick="completeQuest('strength')">Выполнено</button>
+          </li>
+          <li>
+            Прочитать 5 страниц —
+            <button onclick="completeQuest('intelligence')">Выполнено</button>
+          </li>
+        </ul>
+      </section>
+    </main>
   </div>
 
+  <!-- Скрипт -->
   <script src="app.js"></script>
 </body>
 </html>
