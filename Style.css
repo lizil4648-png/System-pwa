@@ -83,3 +83,10 @@ button:hover {
   from {opacity: 0;}
   to {opacity: 1;}
 }
+.logo {
+  display: block;
+  margin: 20px auto;
+  width: 200px;   /* уменьшаем ширину */
+  height: auto;   /* сохраняем пропорции */
+  filter: drop-shadow(0 0 20px #ffffffaa); /* мягкое свечение */
+}
