@@ -38,7 +38,107 @@
       </section>
 
       <!-- Экран навыков -->
-      <section id="skills" class="screen">
+      <section id="skills" class="page hidden">
+  <h2 class="title">Навыки</h2>
+
+  <!-- Список навыков -->
+  <ul id="skills-list" class="skill-list"></ul>
+
+  <!-- Добавление нового навыка -->
+  <div class="add-skill">
+    <input type="text" id="new-skill" placeholder="Добавить навык">
+    <button onclick="addSkill()">Добавить</button>
+  </div>
+</section>
+
+<script>
+  let skills = JSON.parse(localStorage.getItem("skills")) || [];
+  let timers = {}; // хранение интервалов для каждого навыка
+
+  function renderSkills() {
+    const list = document.getElementById("skills-list");
+    list.innerHTML = "";
+    skills.forEach((skill, index) => {
+      let active = skill.startTime ? "⏱ Идёт тренировка..." : "";
+      list.innerHTML += `
+        <li class="skill-item">
+          <b>${skill.name}</b> | XP: ${skill.xp} 
+          <span id="timer-${index}">${active}</span><br>
+          <button onclick="startTimer(${index})">Старт</button>
+          <button onclick="stopTimer(${index})">Стоп</button>
+        </li>
+      `;
+    });
+  }
+
+  function addSkill() {
+    const input = document.getElementById("new-skill");
+    if (input.value.trim() !== "") {
+      skills.push({ name: input.value, xp: 0, startTime: null });
+      input.value = "";
+      saveSkills();
+      renderSkills();
+    }
+  }
+
+  function startTimer(i) {
+    if (skills[i].startTime) return; // уже идёт
+    skills[i].startTime = Date.now();
+    saveSkills();
+    renderSkills();
+
+    timers[i] = setInterval(() => {
+      let diff = Math.floor((Date.now() - skills[i].startTime) / 1000);
+      document.getElementById(`timer-${i}`).textContent =
+        `⏱ ${Math.floor(diff / 60)}м ${diff % 60}с`;
+    }, 1000);
+  }
+
+  function stopTimer(i) {
+    if (skills[i].startTime) {
+      let diff = Math.floor((Date.now() - skills[i].startTime) / 1000); // в секундах
+      let xpEarned = Math.max(1, Math.floor(diff / 60)); // минимум 1 XP
+      skills[i].xp += xpEarned;
+      skills[i].startTime = null;
+      clearInterval(timers[i]);
+      saveSkills();
+      renderSkills();
+    }
+  }
+
+  function saveSkills() {
+    localStorage.setItem("skills", JSON.stringify(skills));
+  }
+
+  renderSkills();
+</script>
+
+<style>
+  #skills {
+    text-align: center;
+    padding: 20px;
+  }
+  .skill-list {
+    list-style: none;
+    padding: 0;
+  }
+  .skill-item {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+  }
+  .add-skill {
+    margin-top: 15px;
+  }
+  .add-skill input {
+    padding: 5px;
+  }
+  .add-skill button {
+    margin-left: 5px;
+  }
+</style>
         <h2>Навыки</h2>
         <ul id="skills-list">
           <li>Пусто... пока</li>
