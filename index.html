@@ -1,219 +1,309 @@
-<!DOCTYPE html><html lang="ru">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RPG Планировщик</title>
+  <title>Solo Leveling System</title>
   <style>
+    /* === Общий стиль === */
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f0f2f5;
-      color: #333;
-    }
-    header {
-      background: #4a90e2;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-    main {
-      padding: 1rem;
-      max-width: 900px;
-      margin: auto;
-    }
-    section {
-      background: white;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    h2 {
-      margin-top: 0;
-    }
-    .task {
+      font-family: "Trebuchet MS", sans-serif;
+      background: radial-gradient(circle at top, #0d0d1a, #000);
+      color: #eee;
       display: flex;
+      justify-content: center;
       align-items: center;
-      margin-bottom: 0.5rem;
+      height: 100vh;
+      overflow: hidden;
     }
-    .task input {
-      margin-right: 0.5rem;
+    h2, h3, p, span {
+      text-shadow: 0 0 8px #6a5acd, 0 0 12px #8a2be2;
     }
-    .calendar-day {
-      display: inline-block;
-      width: 30px;
-      height: 30px;
-      margin: 2px;
-      text-align: center;
-      line-height: 30px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-    }
-    .red { background: #ff6b6b; color: white; }
-    .yellow { background: #ffd93d; color: black; }
-    .green { background: #6bcf63; color: white; }
-    button {
-      background: #4a90e2;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #357ABD;
-    }
-    #system { display: none; }
-    #login {
+
+    /* Панели */
+    .login-container, .system {
+      width: 95%;
+      max-width: 1000px;
+      height: 90%;
+      background: rgba(20,20,30,0.9);
+      border: 2px solid #4a00e0;
+      border-radius: 15px;
+      box-shadow: 0 0 25px #4a00e0, inset 0 0 20px #111;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
+      align-items: center;
+      animation: fadeIn 1s ease;
     }
-    #error {
-      color: red;
-      margin-top: 10px;
+    .hidden { display: none; }
+
+    /* Анимация появления */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
-    nav {
+
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      background: #111;
+      color: #fff;
+      box-shadow: 0 0 10px #4a00e0;
+    }
+    input:focus {
+      outline: none;
+      box-shadow: 0 0 15px #8e2de2;
+    }
+    button {
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #4a00e0;
+      box-shadow: 0 0 20px #8e2de2;
+    }
+
+    .error { color: #ff4444; margin-top: 10px; text-shadow: 0 0 8px #ff0000; }
+
+    /* Вкладки */
+    .tabs {
       display: flex;
       justify-content: center;
-      margin-bottom: 1rem;
+      margin: 10px 0;
     }
-    nav button {
+    .tab {
       margin: 0 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 10px;
+      background: #111;
+      box-shadow: 0 0 10px #4a00e0;
+      transition: 0.3s;
     }
+    .tab:hover { box-shadow: 0 0 15px #8e2de2; }
+    .tab.active {
+      background: #4a00e0;
+      box-shadow: 0 0 20px #8e2de2;
+    }
+
+    .content {
+      flex: 1;
+      width: 100%;
+      padding: 20px;
+      overflow-y: auto;
+      animation: fadeIn 0.5s ease;
+    }
+
+    /* Статы */
+    .stat-bar { margin: 15px 0; }
+    .bar {
+      height: 22px;
+      background: #222;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px #000;
+    }
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4a00e0, #8e2de2);
+      box-shadow: 0 0 15px #8e2de2;
+      transition: width 0.5s ease;
+    }
+
+    /* Календарь */
+    .calendar-day {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin: 2px;
+      border-radius: 6px;
+      box-shadow: 0 0 8px #111;
+    }
+    .red { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
+    .yellow { background: #f1c40f; box-shadow: 0 0 10px #f1c40f; }
+    .green { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+
+    .task { margin: 8px 0; }
   </style>
 </head>
 <body>
-  <div id="login">
+  <!-- Экран входа -->
+  <div class="login-container" id="login">
     <h2>Введите пароль</h2>
-    <input type="password" id="password">
+    <input type="password" id="password" placeholder="Пароль">
     <button onclick="checkPassword()">Войти</button>
-    <div id="error"></div>
-  </div>  <div id="system">
-    <header>
-      <h1>📖 RPG Планировщик</h1>
-    </header>
-    <main>
-      <nav>
-        <button onclick="showTab('daily-tasks')">Задания</button>
-        <button onclick="showTab('missed-prayers')">Пропущенные намазы</button>
-        <button onclick="showTab('skills')">Навыки</button>
-        <button onclick="showTab('calendar')">Календарь</button>
-      </nav><section id="daily-tasks" class="tab">
-    <h2>Ежедневные задания</h2>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Фаджр</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Зухр</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Аср</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Магриб</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Иша</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> 15-минутное упражнение</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Доп. задание (навык)</div>
-    <div class="task"><input type="checkbox" data-xp="0.5"> Доп. задание (навык)</div>
-  </section>
+    <div class="error" id="error"></div>
+  </div>
 
-  <section id="missed-prayers" class="tab" style="display:none;">
-    <h2>Пропущенные намазы</h2>
-    <p>Осталось дней: <span id="missed-count">0</span></p>
-    <div class="task"><input type="checkbox" class="missed"> Фаджр</div>
-    <div class="task"><input type="checkbox" class="missed"> Зухр</div>
-    <div class="task"><input type="checkbox" class="missed"> Аср</div>
-    <div class="task"><input type="checkbox" class="missed"> Магриб</div>
-    <div class="task"><input type="checkbox" class="missed"> Иша</div>
-    <button onclick="completeMissedDay()">Закрыть день</button>
-  </section>
+  <!-- Система -->
+  <div class="system hidden" id="system">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('stats')">Статы</div>
+      <div class="tab" onclick="showTab('tasks')">Задания</div>
+      <div class="tab" onclick="showTab('skills')">Навыки</div>
+      <div class="tab" onclick="showTab('calendar')">Календарь</div>
+      <div class="tab" onclick="showTab('missed')">Пропущенные намазы</div>
+    </div>
 
-  <section id="skills" class="tab" style="display:none;">
-    <h2>Навыки</h2>
-    <p>Навыки 1-го полугодия:</p>
-    <ul>
-      <li>📘 Математика</li>
-      <li>🖌️ Рисование</li>
-      <li>🤸‍♀️ Гибкость</li>
-      <li>💎 Изящность</li>
-      <li>📊 Финансовая грамотность</li>
-      <li>🎯 Дисциплина</li>
-    </ul>
-  </section>
+    <div class="content">
+      <!-- Статы -->
+      <div id="stats">
+        <h2>Статы</h2>
+        <div class="stat-bar">Сила <div class="bar"><div class="bar-fill" id="strength"></div></div></div>
+        <div class="stat-bar">Интеллект <div class="bar"><div class="bar-fill" id="intellect"></div></div></div>
+        <div class="stat-bar">Духовность <div class="bar"><div class="bar-fill" id="spirit"></div></div></div>
+        <div class="stat-bar">Ловкость <div class="bar"><div class="bar-fill" id="agility"></div></div></div>
+        <div class="stat-bar">Харизма <div class="bar"><div class="bar-fill" id="charisma"></div></div></div>
+        <div class="stat-bar">Выносливость <div class="bar"><div class="bar-fill" id="endurance"></div></div></div>
+        <h3>Уровень: <span id="level">1</span></h3>
+        <div class="stat-bar">Прогресс уровня <div class="bar"><div class="bar-fill" id="level-progress"></div></div></div>
+      </div>
 
-  <section id="calendar" class="tab" style="display:none;">
-    <h2>Календарь</h2>
-    <button onclick="toggleView()">Переключить месяц/год</button>
-    <div id="calendar-grid"></div>
-  </section>
-</main>
+      <!-- Задания -->
+      <div id="tasks" class="hidden">
+        <h2>Ежедневные задания</h2>
+        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Фаджр</div>
+        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Зухр</div>
+        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Аср</div>
+        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Магриб</div>
+        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Иша</div>
+        <div class="task"><input type="checkbox" onchange="addXP('strength',0.5)"> Упражнение (15 мин)</div>
+      </div>
 
-  </div>  <script>
-    // ===== Вход по паролю =====
-    function checkPassword() {
-      const pass = document.getElementById("password").value;
-      if (pass === "1234") {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("system").style.display = "block";
-      } else {
-        document.getElementById("error").textContent = "Неверный пароль";
-      }
-    }
+      <!-- Навыки -->
+      <div id="skills" class="hidden">
+        <h2>Навыки</h2>
+        <div class="task">
+          <span>Математика</span>
+          <button onclick="startTimer('math')">Старт</button>
+          <button onclick="stopTimer('math')">Стоп</button>
+          <span id="math-timer">0</span> мин
+        </div>
+      </div>
 
-    function showTab(id) {
-      document.querySelectorAll(".tab").forEach(tab => tab.style.display = "none");
-      document.getElementById(id).style.display = "block";
-    }
+      <!-- Календарь -->
+      <div id="calendar" class="hidden">
+        <h2>Календарь</h2>
+        <div>
+          <button onclick="renderCalendar('month')">Месяц</button>
+          <button onclick="renderCalendar('year')">Год</button>
+        </div>
+        <div id="calendar-grid"></div>
+      </div>
 
-    // ===== Сохранение прогресса =====
-    const storageKey = "rpg_planner";
-    let data = JSON.parse(localStorage.getItem(storageKey)) || {
-      missedCount: 0,
-      tasks: {},
+      <!-- Пропущенные намазы -->
+      <div id="missed" class="hidden">
+        <h2>Пропущенные намазы</h2>
+        <p>Осталось дней: <span id="missed-count">658</span></p>
+        <div id="missed-prayers">
+          <input type="checkbox" id="m-fajr"> Фаджр<br>
+          <input type="checkbox" id="m-zuhr"> Зухр<br>
+          <input type="checkbox" id="m-asr"> Аср<br>
+          <input type="checkbox" id="m-maghrib"> Магриб<br>
+          <input type="checkbox" id="m-isha"> Иша<br>
+        </div>
+        <button onclick="completeMissed()">Завершить день</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PASSWORD = "2309";
+    let stats = JSON.parse(localStorage.getItem("stats")) || {
+      strength:0, intellect:0, spirit:0, agility:0, charisma:0, endurance:0, level:1, levelXP:0
     };
+    let missedCount = JSON.parse(localStorage.getItem("missedCount")) || 658;
+    let timers = {};
 
-    document.querySelectorAll("#daily-tasks input").forEach((checkbox, i) => {
-      checkbox.checked = data.tasks[i] || false;
-      checkbox.addEventListener("change", () => {
-        data.tasks[i] = checkbox.checked;
-        saveData();
-      });
-    });
-
-    document.getElementById("missed-count").textContent = data.missedCount;
-
-    function completeMissedDay() {
-      const checkboxes = document.querySelectorAll("#missed-prayers .missed");
-      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-      if (allChecked && data.missedCount > 0) {
-        data.missedCount--;
-        document.getElementById("missed-count").textContent = data.missedCount;
-        checkboxes.forEach(cb => cb.checked = false);
-        saveData();
+    function checkPassword() {
+      const input = document.getElementById("password").value;
+      if (input === PASSWORD) {
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("system").classList.remove("hidden");
+        updateStats();
+        updateMissed();
       } else {
-        alert("Отметь все 5 намазов, чтобы закрыть день!");
+        document.getElementById("error").innerText = "Неверный пароль";
       }
     }
 
-    // ===== Календарь =====
-    let monthView = true;
-    function toggleView() {
-      monthView = !monthView;
-      renderCalendar();
+    function showTab(tab) {
+      document.querySelectorAll(".content > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById(tab).classList.remove("hidden");
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add("active");
     }
 
-    function renderCalendar() {
-      const grid = document.getElementById("calendar-grid");
-      grid.innerHTML = "";
-      const days = monthView ? 30 : 365;
-      for (let i = 1; i <= days; i++) {
-        let el = document.createElement("div");
-        el.className = "calendar-day red";
-        el.textContent = i;
-        grid.appendChild(el);
+    function addXP(stat, amount) {
+      stats[stat] += amount;
+      stats.levelXP += amount;
+      if (stats.levelXP >= 150) {
+        stats.level++;
+        stats.levelXP = 0;
       }
+      saveData();
+      updateStats();
     }
-    renderCalendar();
+
+    function updateStats() {
+      const max = 100;
+      for (let s of ["strength","intellect","spirit","agility","charisma","endurance"]) {
+        document.getElementById(s).style.width = Math.min(stats[s], max) + "%";
+      }
+      document.getElementById("level").innerText = stats.level;
+      document.getElementById("level-progress").style.width = (stats.levelXP/150*100)+"%";
+    }
 
     function saveData() {
-      localStorage.setItem(storageKey, JSON.stringify(data));
+      localStorage.setItem("stats", JSON.stringify(stats));
+      localStorage.setItem("missedCount", JSON.stringify(missedCount));
     }
-  </script></body>
+
+    function startTimer(skill) {
+      if (timers[skill]) return;
+      timers[skill] = setInterval(() => {
+        let val = parseInt(document.getElementById(skill+"-timer").innerText);
+        document.getElementById(skill+"-timer").innerText = val+1;
+      },60000);
+    }
+
+    function stopTimer(skill) {
+      if (timers[skill]) {
+        clearInterval(timers[skill]);
+        let minutes = parseInt(document.getElementById(skill+"-timer").innerText);
+        addXP("intellect", minutes*0.5);
+        timers[skill] = null;
+      }
+    }
+
+    function renderCalendar(mode) {
+      let grid = document.getElementById("calendar-grid");
+      grid.innerHTML = "";
+      let days = mode==="month"?30:365;
+      for (let i=1;i<=days;i++) {
+        let div = document.createElement("div");
+        div.className="calendar-day red";
+        grid.appendChild(div);
+      }
+    }
+
+    function updateMissed() {
+      document.getElementById("missed-count").innerText = missedCount;
+    }
+
+    function completeMissed() {
+      let allChecked = ["m-fajr","m-zuhr","m-asr","m-maghrib","m-isha"].every(id => document.getElementById(id).checked);
+      if (allChecked && missedCount>0) {
+        missedCount--;
+        ["m-fajr","m-zuhr","m-asr","m-maghrib","m-isha"].forEach(id => document.getElementById(id).checked=false);
+        saveData();
+        updateMissed();
+      }
+    }
+  </script>
+</body>
 </html>
