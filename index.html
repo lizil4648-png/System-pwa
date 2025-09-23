@@ -21,7 +21,7 @@
     <p id="error" class="error hidden">Неверный пароль</p>
   </div>
 
-  <!-- Основной интерфейс (спрятан до входа) -->
+  <!-- Основной интерфейс -->
   <div id="main-app" class="hidden">
     <div class="container">
       <img src="arise.png" alt="Arise" class="logo" />
@@ -30,10 +30,12 @@
         <button onclick="showPage('stats')">Статистика</button>
         <button onclick="showPage('skills')">Навыки</button>
         <button onclick="showPage('quests')">Задания</button>
+        <button onclick="showPage('calendar')">Календарь</button>
       </div>
     </div>
 
     <div id="content">
+      <!-- Статистика -->
       <section id="stats" class="page hidden">
         <h2>Статистика</h2>
         <p>Сила: 10</p>
@@ -43,30 +45,59 @@
         <p>Духовность: 5</p>
       </section>
 
+      <!-- Навыки -->
       <section id="skills" class="page hidden">
         <h2>Навыки</h2>
         <ul>
           <li>Физика</li>
           <li>Математика</li>
+          <li>Химия</li>
+          <li>Рукопашный бой</li>
+          <li>Гибкость</li>
+          <li>Скорость</li>
           <li>Английский</li>
           <li>Ораторство</li>
-          <li>...</li>
+          <li>Копирайтинг</li>
+          <li>Нейронка</li>
+          <li>Финансовая грамотность</li>
+          <li>Изящность</li>
+          <li>Дисциплина</li>
+          <li>Стрессоустойчивость</li>
+          <li>Критическое мышление</li>
+          <li>Выучить 5 аятов из Корана</li>
+          <li>Ақида</li>
+          <li>Фиқх</li>
+          <li>Тасаууф</li>
+          <li>Рисование</li>
+          <li>Скорочтение</li>
+          <li>Чистоплотность</li>
         </ul>
       </section>
 
+      <!-- Задания -->
       <section id="quests" class="page hidden">
         <h2>Задания</h2>
-        <ul>
-          <li>Сделать упражнение ( +1 Сила )</li>
-          <li>Выучить аят ( +1 Духовность )</li>
-          <li>Прочитать 10 страниц ( +1 Интеллект )</li>
-        </ul>
+        <ul id="quest-list"></ul>
+        <button onclick="generateDailyTasks()">🔄 Сгенерировать новые</button>
+      </section>
+
+      <!-- Календарь -->
+      <section id="calendar" class="page hidden">
+        <h2>Календарь прогресса</h2>
+        <div id="calendar-controls">
+          <button onclick="prevMonth()">⬅</button>
+          <span id="calendar-title"></span>
+          <button onclick="nextMonth()">➡</button>
+        </div>
+        <div id="calendar-grid"></div>
+        <button onclick="toggleYearView()">📅 Показать год</button>
+        <div id="year-grid" class="hidden"></div>
       </section>
     </div>
   </div>
 
   <script>
-    // 🔑 Задай свой пароль здесь
+    // 🔑 Пароль для входа
     const PASSWORD = "arise123";
 
     function checkPassword() {
@@ -76,14 +107,145 @@
       if (input === PASSWORD) {
         document.getElementById("login-screen").classList.add("hidden");
         document.getElementById("main-app").classList.remove("hidden");
+        generateDailyTasks(); // сразу генерим задания
       } else {
         error.classList.remove("hidden");
       }
     }
 
+    // Переключение страниц
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
       document.getElementById(pageId).classList.remove('hidden');
+
+      if (pageId === "calendar") {
+        renderCalendar(currentYear, currentMonth);
+      }
+    }
+
+    // 📋 Список навыков
+    const skills = [
+      "Физика","Математика","Химия","Рукопашный бой","Гибкость","Скорость",
+      "Английский","Ораторство","Копирайтинг","Нейронка","Финансовая грамотность",
+      "Изящность","Дисциплина","Стрессоустойчивость","Критическое мышление",
+      "Выучить 5 аятов из Корана","Ақида","Фиқх","Тасаууф",
+      "Рисование","Скорочтение","Чистоплотность"
+    ];
+
+    // 📌 Ежедневные задания
+    function generateDailyTasks() {
+      const questList = document.getElementById("quest-list");
+      questList.innerHTML = "";
+
+      // 5 намазов
+      const prayers = ["Фаджр","Зухр","Аср","Магриб","Иша"];
+      prayers.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `Совершить ${p} (+1 Духовность)`;
+        questList.appendChild(li);
+      });
+
+      // Иногда ораза
+      if (Math.random() < 0.2) {
+        const li = document.createElement("li");
+        li.textContent = "Держать оразу сегодня (+2 Духовность)";
+        questList.appendChild(li);
+      }
+
+      // 2–3 случайных навыка
+      const shuffled = skills.sort(() => 0.5 - Math.random());
+      const randomTasks = shuffled.slice(0, Math.floor(Math.random() * 2) + 2);
+
+      randomTasks.forEach(skill => {
+        const li = document.createElement("li");
+        li.textContent = `Практиковать: ${skill} (+1 опыт)`;
+        questList.appendChild(li);
+      });
+    }
+
+    // 📅 Календарь
+    const now = new Date();
+    let currentMonth = now.getMonth();
+    let currentYear = now.getFullYear();
+
+    function renderCalendar(year, month) {
+      const calendarTitle = document.getElementById("calendar-title");
+      const calendarGrid = document.getElementById("calendar-grid");
+      const yearGrid = document.getElementById("year-grid");
+
+      const months = [
+        "Январь","Февраль","Март","Апрель","Май","Июнь",
+        "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
+      ];
+      calendarTitle.textContent = months[month] + " " + year;
+
+      calendarGrid.innerHTML = "";
+      yearGrid.innerHTML = "";
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // пустые клетки
+      for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
+        const empty = document.createElement("div");
+        empty.className = "day empty";
+        calendarGrid.appendChild(empty);
+      }
+
+      // дни
+      for (let d = 1; d <= daysInMonth; d++) {
+        const day = document.createElement("div");
+        day.className = "day";
+        day.textContent = d;
+
+        // для примера: случайный прогресс
+        const progress = Math.floor(Math.random() * 101);
+        if (progress < 20) day.style.background = "red";
+        else if (progress < 50) day.style.background = "yellow";
+        else if (progress < 80) day.style.background = "lightblue";
+        else day.style.background = "lightgreen";
+
+        calendarGrid.appendChild(day);
+      }
+    }
+
+    function prevMonth() {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    function nextMonth() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    function toggleYearView() {
+      const yearGrid = document.getElementById("year-grid");
+      yearGrid.classList.toggle("hidden");
+
+      if (!yearGrid.classList.contains("hidden")) {
+        renderYear(currentYear);
+      }
+    }
+
+    function renderYear(year) {
+      const yearGrid = document.getElementById("year-grid");
+      yearGrid.innerHTML = "";
+
+      for (let m = 0; m < 12; m++) {
+        const block = document.createElement("div");
+        block.className = "month-block";
+        block.innerHTML = `<h4>${m+1} месяц</h4>`;
+        yearGrid.appendChild(block);
+      }
     }
   </script>
 </body>
