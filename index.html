@@ -1,985 +1,219 @@
-<!DOCTYPE html>
-<html lang="ru">
+<!DOCTYPE html><html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RPG Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RPG Планировщик</title>
   <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --accent:#6ee7b7;
-      --muted:#94a3b8;
-      --danger:#ff7b7b;
-      --warn:#ffd36b;
-      --ok:#7be28f;
-      --glass: rgba(255,255,255,0.03);
-      --radius:14px;
-      --maxw:1100px;
-      --gap:12px;
-      font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
-      color-scheme: dark;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+      color: #333;
     }
-
-    html,body{
-      height:100%;
-      margin:0;
-      background: linear-gradient(180deg,#061122 0%, #071322 60%);
-      color:#e6eef6;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
     }
-
-    .wrap{
-      max-width: var(--maxw);
-      margin:18px auto;
-      padding:18px;
-      box-sizing:border-box;
+    main {
+      padding: 1rem;
+      max-width: 900px;
+      margin: auto;
     }
-
-    header{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:14px;
+    section {
+      background: white;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    h1{ margin:0; font-size:20px; letter-spacing:0.2px;}
-    .sub { color:var(--muted); font-size:13px }
-
-    /* login */
-    .login {
-      display:flex;
-      gap:8px;
-      align-items:center;
+    h2 {
+      margin-top: 0;
     }
-    input[type="password"]{
-      padding:8px 10px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,0.06);
-      background:var(--card);
-      color:inherit;
-      min-width:160px;
-      outline:none;
+    .task {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
     }
-    button{
-      background:linear-gradient(180deg,var(--accent),#4dd2a2);
-      color:#042018;
-      border:none;
-      padding:8px 12px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:600;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+    .task input {
+      margin-right: 0.5rem;
     }
-    button.ghost{
-      background:transparent;
-      color:var(--accent);
-      border:1px solid rgba(110,231,183,0.12);
-      box-shadow:none;
+    .calendar-day {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      margin: 2px;
+      text-align: center;
+      line-height: 30px;
+      border-radius: 6px;
+      font-size: 0.8rem;
     }
-    .error { color:#ff8b8b; font-size:13px; margin-top:6px; display:none; }
-
-    /* layout */
-    .layout{
-      display:grid;
-      grid-template-columns: 320px 1fr;
-      gap:16px;
+    .red { background: #ff6b6b; color: white; }
+    .yellow { background: #ffd93d; color: black; }
+    .green { background: #6bcf63; color: white; }
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    @media (max-width:880px){
-      .layout{ grid-template-columns: 1fr; }
-      .sidebar { order:2; }
-      .main { order:1; }
+    button:hover {
+      background: #357ABD;
     }
-
-    /* sidebar */
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.015));
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow: 0 4px 18px rgba(2,6,23,0.5);
+    #system { display: none; }
+    #login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .sidebar .card { position:sticky; top:18px; }
-
-    .stat {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:8px;
-      font-weight:600;
+    #error {
+      color: red;
+      margin-top: 10px;
     }
-    .stat small { color:var(--muted); font-weight:400; font-size:13px; }
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
+    nav {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
     }
-    .tabs button{
-      background:var(--glass);
-      border-radius:10px;
-      padding:8px 10px;
-      color:var(--muted);
-      border:1px solid rgba(255,255,255,0.03);
-      font-weight:600;
-      cursor:pointer;
+    nav button {
+      margin: 0 5px;
     }
-    .tabs button.active{
-      background:linear-gradient(180deg,#0ea37a,#0a7f60);
-      color:#051e16;
-    }
-
-    /* skill list */
-    .skill {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      padding:8px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.01);
-      margin-bottom:8px;
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .skill .meta { font-size:13px; color:var(--muted) }
-    .skill .xp { font-weight:700; }
-
-    /* main content */
-    .main-top { display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px;}
-    .main-grid{
-      display:grid;
-      grid-template-columns: 1fr 360px;
-      gap:12px;
-    }
-    @media (max-width:1100px){
-      .main-grid { grid-template-columns: 1fr; }
-    }
-
-    .tasks-list .task{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px;
-      border-radius:10px;
-      background:rgba(255,255,255,0.01);
-      margin-bottom:8px;
-      justify-content:space-between;
-      border:1px solid rgba(255,255,255,0.02);
-    }
-    .task .left { display:flex; gap:10px; align-items:center; }
-    .task small { color:var(--muted); font-size:13px; }
-    .chip { padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.02); font-weight:600; font-size:13px; }
-
-    .timer {
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    .timer .time { font-weight:700; }
-
-    /* calendar */
-    .calendar {
-      width:100%;
-      padding:8px;
-      border-radius:10px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    }
-    .cal-controls { display:flex; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .cal-grid {
-      display:grid;
-      grid-template-columns: repeat(7,1fr);
-      gap:6px;
-    }
-    .cal-cell {
-      min-height:64px;
-      padding:6px;
-      border-radius:8px;
-      background:rgba(255,255,255,0.01);
-      border:1px solid rgba(255,255,255,0.015);
-      font-size:13px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .cell-num { font-weight:700; }
-    .cell-badge { font-size:12px; padding:4px 6px; border-radius:999px; background:rgba(255,255,255,0.02); align-self:flex-end; }
-
-    .color-0 { background:linear-gradient(180deg, rgba(255,0,0,0.06), rgba(255,0,0,0.03)); }
-    .color-1 { background:linear-gradient(180deg, rgba(255,129,0,0.06), rgba(255,129,0,0.03)); }
-    .color-2 { background:linear-gradient(180deg, rgba(123,226,143,0.06), rgba(123,226,143,0.03)); }
-
-    /* small text */
-    .muted { color:var(--muted); font-size:13px; }
-
-    footer { margin-top:18px; color:var(--muted); font-size:13px; text-align:center; }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div id="login">
+    <h2>Введите пароль</h2>
+    <input type="password" id="password">
+    <button onclick="checkPassword()">Войти</button>
+    <div id="error"></div>
+  </div>  <div id="system">
     <header>
-      <div>
-        <h1>RPG Tracker — личный трекер</h1>
-        <div class="sub">Сохраняет прогресс, таймер навыков, задания и календарь</div>
-      </div>
-
-      <div class="login">
-        <input id="password" type="password" placeholder="Пароль">
-        <button id="loginBtn">Войти</button>
-      </div>
+      <h1>📖 RPG Планировщик</h1>
     </header>
+    <main>
+      <nav>
+        <button onclick="showTab('daily-tasks')">Задания</button>
+        <button onclick="showTab('missed-prayers')">Пропущенные намазы</button>
+        <button onclick="showTab('skills')">Навыки</button>
+        <button onclick="showTab('calendar')">Календарь</button>
+      </nav><section id="daily-tasks" class="tab">
+    <h2>Ежедневные задания</h2>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Фаджр</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Зухр</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Аср</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Магриб</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Иша</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> 15-минутное упражнение</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Доп. задание (навык)</div>
+    <div class="task"><input type="checkbox" data-xp="0.5"> Доп. задание (навык)</div>
+  </section>
 
-    <div id="error" class="error">Неверный пароль</div>
+  <section id="missed-prayers" class="tab" style="display:none;">
+    <h2>Пропущенные намазы</h2>
+    <p>Осталось дней: <span id="missed-count">0</span></p>
+    <div class="task"><input type="checkbox" class="missed"> Фаджр</div>
+    <div class="task"><input type="checkbox" class="missed"> Зухр</div>
+    <div class="task"><input type="checkbox" class="missed"> Аср</div>
+    <div class="task"><input type="checkbox" class="missed"> Магриб</div>
+    <div class="task"><input type="checkbox" class="missed"> Иша</div>
+    <button onclick="completeMissedDay()">Закрыть день</button>
+  </section>
 
-    <!-- SYSTEM -->
-    <div id="system" style="display:none;">
-      <div class="layout">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div>
-                <div style="font-weight:700">Статы</div>
-                <div class="muted">Очки характеристик</div>
-              </div>
-              <div><button id="resetBtn" class="ghost">Сброс</button></div>
-            </div>
+  <section id="skills" class="tab" style="display:none;">
+    <h2>Навыки</h2>
+    <p>Навыки 1-го полугодия:</p>
+    <ul>
+      <li>📘 Математика</li>
+      <li>🖌️ Рисование</li>
+      <li>🤸‍♀️ Гибкость</li>
+      <li>💎 Изящность</li>
+      <li>📊 Финансовая грамотность</li>
+      <li>🎯 Дисциплина</li>
+    </ul>
+  </section>
 
-            <div id="statsBox">
-              <div class="stat"><span>Сила</span><small id="stat_strength">0</small></div>
-              <div class="stat"><span>Ловкость</span><small id="stat_agility">0</small></div>
-              <div class="stat"><span>Живучесть</span><small id="stat_vit">0</small></div>
-              <div class="stat"><span>Интеллект</span><small id="stat_int">0</small></div>
-              <div class="stat"><span>Духовность</span><small id="stat_spirit">0</small></div>
-            </div>
+  <section id="calendar" class="tab" style="display:none;">
+    <h2>Календарь</h2>
+    <button onclick="toggleView()">Переключить месяц/год</button>
+    <div id="calendar-grid"></div>
+  </section>
+</main>
 
-            <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:10px 0">
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div style="font-weight:700">Навыки</div>
-              <div class="muted" id="periodInfo">Период: 0 мес</div>
-            </div>
-
-            <div id="skillsBox" style="max-height:420px; overflow:auto; padding-right:6px;"></div>
-          </div>
-        </aside>
-
-        <!-- MAIN -->
-        <main class="main">
-          <div class="main-top">
-            <div>
-              <div style="font-weight:700;font-size:18px">Задания</div>
-              <div class="muted">Ежедневные и навыковые задания</div>
-            </div>
-
-            <div style="display:flex;gap:8px;align-items:center">
-              <button id="addDailyBtn" class="ghost">Обновить задания на сегодня</button>
-              <div class="muted">Сохраняется локально</div>
-            </div>
-          </div>
-
-          <div class="main-grid">
-            <section>
-              <div class="card tasks-list" id="tasksCard">
-                <!-- tasks rendered here -->
-              </div>
-
-              <div style="height:12px"></div>
-
-              <div class="card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                  <div style="font-weight:700">Таймер навыка</div>
-                  <div class="muted">1 мин = 1 XP</div>
-                </div>
-                <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
-                  <select id="timerSkillSelect" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03)">
-                  </select>
-                  <div class="timer">
-                    <div class="time" id="timerDisplay">00:00</div>
-                    <button id="timerStart">Старт</button>
-                    <button id="timerStop" class="ghost">Стоп</button>
-                  </div>
-                </div>
-                <div class="muted">Нажми Старт, занимайся — по Стопу получишь XP (1 мин = 1 XP)</div>
-              </div>
-
-            </section>
-
-            <aside>
-              <div class="card calendar">
-                <div class="cal-controls">
-                  <div>
-                    <button id="prevMonth" class="ghost">◀</button>
-                    <button id="nextMonth" class="ghost">▶</button>
-                    <span id="calTitle" style="font-weight:700;margin-left:8px"></span>
-                  </div>
-                  <div>
-                    <button id="viewToggle" class="ghost">Месяц/Год</button>
-                  </div>
-                </div>
-
-                <div class="cal-grid" id="calGrid">
-                  <!-- cells -->
-                </div>
-
-                <div style="margin-top:8px" class="muted">
-                  Легенда: <span style="display:inline-block;width:10px;height:10px;background:rgba(255,0,0,0.4);border-radius:3px;margin:0 6px;vertical-align:middle"></span>0-2
-                  <span style="display:inline-block;width:10px;height:10px;background:rgba(255,129,0,0.4);border-radius:3px;margin:0 6px;vertical-align:middle"></span>3-5
-                  <span style="display:inline-block;width:10px;height:10px;background:rgba(123,226,143,0.4);border-radius:3px;margin:0 6px;vertical-align:middle"></span>6-7
-                </div>
-              </div>
-            </aside>
-          </div>
-        </main>
-      </div>
-
-      <footer>Подсказка: можно обновлять задания на сегодня кнопкой «Обновить задания на сегодня»</footer>
-    </div>
-  </div>
-
-<script>
-/*
-  RPG Tracker v1
-  - login (password default "2309")
-  - localStorage persistence
-  - skills with timer (1min = 1XP)
-  - tasks: daily fixed, chance-based, +2 random skill tasks
-  - task completion gives 0.5 XP to linked stat/skill
-  - calendar colored by tasks done per day
-  - skill waves by user's spec
-*/
-
-// ---------- CONFIG ----------
-const PASSWORD = "2309"; // change if needed
-const TASK_XP = 0.5; // за обычное задание даётся 0.5 XP в связанный стат/навык
-const MIN_TO_XP = 1; // таймер: 1 мин = 1 XP
-
-// full skills list (user provided)
-const ALL_SKILLS = [
-  "математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование",
-  "физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение",
-  "химия","Коран (5 аятов)","ақида","FIқх","тасаууф","критическое мышление","копирайтинг","скорость",
-  "английский","арабский"
-];
-
-// waves as user specified (periods by half-year)
-const WAVES = {
-  0: ["математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование"], // first half-year
-  1: ["физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение"], // second half-year
-  2: ["химия","Коран (5 аятов)","ақида","FIқх","тасаууф","критическое мышление","копирайтинг","скорость"] // third half-year
-};
-// английский и арабский доступны весь год
-const ALWAYS_AVAILABLE = ["английский","арабский"];
-
-// stats mapping for tasks
-// We'll map some task types to stats (for incrementing stat values)
-const STAT_KEYS = ["strength","agility","vit","int","spirit"];
-const DEFAULT_STATS = { strength:0, agility:0, vit:0, int:0, spirit:0 };
-
-// helper: mapping some skills to stats when task says "adds to stat"
-const SKILL_TO_STAT = {
-  "рукопашный бой":"strength",
-  "упражнение":"strength",
-  "гибкость":"agility",
-  "скорость":"agility",
-  "дисциплина":"spirit",
-  "Коран (5 аятов)":"spirit",
-  "ақида":"spirit",
-  "арифметика":"int",
-  // default for others -> int
-};
-
-// ---------- STORAGE KEYS ----------
-const LS_KEY = "rpg_tracker_v1";
-const LS_DEFAULT = {
-  stats: DEFAULT_STATS,
-  skills: {}, // { skillName: { xp: number } }
-  calendar: {}, // yyyy-mm-dd: { doneCount: number, tasks: [ids] }
-  tasksForDay: {}, // yyyy-mm-dd: [task objects]
-  startDate: null // ISO date when user started (for wave calculation)
-};
-
-// ---------- APP STATE ----------
-let state = loadState();
-if(!state.startDate) {
-  state.startDate = new Date().toISOString().slice(0,10); // today by default
-  saveState();
-}
-
-let timer = {
-  running: false,
-  startTS: null,
-  skill: null,
-  seconds: 0,
-  intervalId: null
-};
-
-let viewMode = "month"; // or "year"
-let shownYear, shownMonth; // month: 0-11
-
-// ---------- LOGIN ----------
-const loginBtn = document.getElementById("loginBtn");
-const loginInput = document.getElementById("password");
-const errorEl = document.getElementById("error");
-const systemEl = document.getElementById("system");
-
-loginBtn.addEventListener("click", tryLogin);
-loginInput.addEventListener("keyup", (e)=>{ if(e.key==="Enter") tryLogin(); });
-
-function tryLogin(){
-  const val = loginInput.value||"";
-  if(val === PASSWORD){
-    errorEl.style.display = "none";
-    systemEl.style.display = "block";
-    document.querySelector("header").scrollIntoView({behavior:"smooth"});
-    initApp();
-  } else {
-    errorEl.style.display = "block";
-    systemEl.style.display = "none";
-  }
-}
-
-// ---------- LOAD/SAVE ----------
-function loadState(){
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw) return JSON.parse(JSON.stringify(LS_DEFAULT));
-    const parsed = JSON.parse(raw);
-    // ensure keys
-    return Object.assign(JSON.parse(JSON.stringify(LS_DEFAULT)), parsed);
-  } catch(e){
-    console.error("loadState error", e);
-    return JSON.parse(JSON.stringify(LS_DEFAULT));
-  }
-}
-
-function saveState(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-// ---------- INIT UI ----------
-function initApp(){
-  renderStats();
-  populateSkills();
-  renderSkillTimerSelect();
-  attachTimerButtons();
-  prepareTasksForToday();
-  renderTasks();
-  initCalendar();
-  attachControls();
-  renderPeriodInfo();
-  document.getElementById("resetBtn").addEventListener("click", resetAll);
-}
-
-// ---------- STATS ----------
-function renderStats(){
-  document.getElementById("stat_strength").innerText = Math.round(state.stats.strength*100)/100;
-  document.getElementById("stat_agility").innerText = Math.round(state.stats.agility*100)/100;
-  document.getElementById("stat_vit").innerText = Math.round(state.stats.vit*100)/100;
-  document.getElementById("stat_int").innerText = Math.round(state.stats.int*100)/100;
-  document.getElementById("stat_spirit").innerText = Math.round(state.stats.spirit*100)/100;
-}
-
-// ---------- SKILLS UI ----------
-function populateSkills(){
-  const box = document.getElementById("skillsBox");
-  box.innerHTML = "";
-  const available = getAvailableSkillsForToday();
-
-  // ensure every skill exists in state.skills
-  ALL_SKILLS.forEach(s => {
-    if(!state.skills[s]) state.skills[s] = { xp:0 };
-  });
-
-  // show available skills grouped and others collapsed
-  available.forEach(skill => {
-    const el = document.createElement("div");
-    el.className = "skill";
-    el.innerHTML = `
-      <div>
-        <div style="font-weight:700">${skill}</div>
-        <div class="meta">XP: <span class="xp" data-skill="${skill}">${Math.round((state.skills[skill].xp||0)*100)/100}</span></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="addXP" data-skill="${skill}">+0.5 (задание)</button>
-      </div>
-    `;
-    box.appendChild(el);
-  });
-
-  // Also list locked skills briefly
-  const locked = ALL_SKILLS.filter(s => !available.includes(s) && !ALWAYS_AVAILABLE.includes(s));
-  if(locked.length){
-    const hr = document.createElement("hr");
-    hr.style.border="none";
-    hr.style.height="1px";
-    hr.style.background="rgba(255,255,255,0.02)";
-    hr.style.margin="8px 0";
-    box.appendChild(hr);
-    const title = document.createElement("div");
-    title.className="muted";
-    title.style.marginBottom="8px";
-    title.innerText = "Заблокированные навыки (открываются позже):";
-    box.appendChild(title);
-
-    locked.forEach(s=>{
-      const el = document.createElement("div");
-      el.className="skill";
-      el.innerHTML = `<div><div style="font-weight:700">${s}</div><div class="meta">XP: <span class="xp">${Math.round((state.skills[s].xp||0)*100)/100}</span></div></div>`;
-      box.appendChild(el);
-    });
-  }
-
-  // add event to +0.5 buttons
-  box.querySelectorAll(".addXP").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const skill = b.dataset.skill;
-      addXpToSkill(skill, TASK_XP);
-      // also mark today's calendar as +1 task completed
-      markTaskDoneForToday({id:"manual-"+Date.now(), title:`Задание: ${skill}`, skill});
-      renderTasks();
-      populateSkills();
-    });
-  });
-}
-
-function getAvailableSkillsForToday(){
-  const start = new Date(state.startDate);
-  const today = new Date();
-  const months = monthDiff(start, today); // months passed
-  // months / 6 -> which half-year index (0,1,2,...). We have defined three waves 0..2.
-  // We'll treat each half-year (6 months) as wave index = Math.floor(months / 6) % 3 (but cap at 2)
-  const waveIndex = Math.min(2, Math.floor(months / 6));
-  const waveSkills = WAVES[waveIndex] || [];
-  // always add ALWAYS_AVAILABLE
-  const result = Array.from(new Set([...ALWAYS_AVAILABLE, ...waveSkills]));
-  // keep order as in ALL_SKILLS
-  return ALL_SKILLS.filter(s=>result.includes(s));
-}
-
-function monthDiff(d1, d2){
-  // approximate months difference
-  let months = (d2.getFullYear() - d1.getFullYear()) * 12;
-  months += d2.getMonth() - d1.getMonth();
-  return months;
-}
-
-function addXpToSkill(skill, xp){
-  if(!state.skills[skill]) state.skills[skill] = { xp:0 };
-  state.skills[skill].xp = (state.skills[skill].xp || 0) + xp;
-  saveState();
-  renderStats(); // some tasks may add to stats too
-  populateSkills();
-}
-
-// ---------- TIMER ----------
-function renderSkillTimerSelect(){
-  const sel = document.getElementById("timerSkillSelect");
-  sel.innerHTML = "";
-  const avail = getAvailableSkillsForToday();
-  avail.forEach(s=>{
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.text = s;
-    sel.appendChild(opt);
-  });
-}
-
-function attachTimerButtons(){
-  document.getElementById("timerStart").addEventListener("click", ()=>{
-    if(timer.running) return;
-    const skill = document.getElementById("timerSkillSelect").value;
-    if(!skill) return alert("Выбери навык для таймера");
-    timer.running = true;
-    timer.skill = skill;
-    timer.startTS = Date.now();
-    timer.seconds = 0;
-    document.getElementById("timerStart").disabled = true;
-    document.getElementById("timerStop").disabled = false;
-    timer.intervalId = setInterval(()=>{
-      timer.seconds++;
-      updateTimerDisplay();
-    }, 1000);
-  });
-
-  document.getElementById("timerStop").addEventListener("click", ()=>{
-    if(!timer.running) return;
-    stopTimerAndGrantXP();
-  });
-
-  // init state
-  document.getElementById("timerStop").disabled = true;
-  updateTimerDisplay();
-}
-
-function updateTimerDisplay(){
-  const s = timer.seconds;
-  const mm = String(Math.floor(s/60)).padStart(2,"0");
-  const ss = String(s%60).padStart(2,"0");
-  document.getElementById("timerDisplay").innerText = `${mm}:${ss}`;
-}
-
-function stopTimerAndGrantXP(){
-  clearInterval(timer.intervalId);
-  timer.running = false;
-  document.getElementById("timerStart").disabled = false;
-  document.getElementById("timerStop").disabled = true;
-  // compute minutes
-  const mins = Math.floor(timer.seconds / 60);
-  if(mins > 0){
-    const xp = mins * MIN_TO_XP; // 1 min = 1 xp
-    addXpToSkill(timer.skill, xp);
-    alert(`Ты получил ${xp} XP для навыка "${timer.skill}"`);
-  } else {
-    alert("Меньше 1 минуты — XP не начислено");
-  }
-  timer.seconds = 0;
-  updateTimerDisplay();
-}
-
-// ---------- TASKS ----------
-function prepareTasksForToday(){
-  const today = isoToday();
-  if(state.tasksForDay[today]) return; // already have tasks
-  // create tasks for this day
-  const tasks = [];
-
-  // daily fixed: 5 намазов (we treat as a task)
-  tasks.push({
-    id: "namaz-"+today,
-    title: "5 намазов",
-    skill: "Коран (5 аятов)", // духовность
-    addsToStat: "spirit",
-    done:false,
-    auto:false
-  });
-
-  // 15 мин упражнение
-  tasks.push({
-    id: "exercise-"+today,
-    title: "15 минут упражнение",
-    skill: "упражнение",
-    addsToStat: "strength",
-    done:false,
-    durationMin:15,
-    auto:false
-  });
-
-  // 20% шанс ораза
-  if(Math.random() < 0.2){
-    tasks.push({
-      id: "oraza-"+today,
-      title: "Ораза (20% шанс)",
-      skill: "спирит",
-      addsToStat: "spirit",
-      done:false,
-      auto:false
-    });
-  }
-
-  // two random skill tasks from available
-  const avail = getAvailableSkillsForToday().filter(s => !["Коран (5 аятов)","английский","арабский"].includes(s));
-  shuffleArray(avail);
-  const picks = avail.slice(0,2);
-  picks.forEach((s, idx)=>{
-    tasks.push({
-      id: `skilltask-${idx}-${today}`,
-      title: `Навыковое: ${s}`,
-      skill: s,
-      addsToStat: SKILL_TO_STAT[s] || "int",
-      done:false,
-      auto:false
-    });
-  });
-
-  state.tasksForDay[today] = tasks;
-  saveState();
-}
-
-function renderTasks(){
-  const today = isoToday();
-  const tasks = state.tasksForDay[today] || [];
-  const card = document.getElementById("tasksCard");
-  card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <div style="font-weight:700">Задания — ${formatDateHuman(today)}</div>
-    <div class="muted">${tasks.length} шт</div>
-  </div>`;
-  const list = document.createElement("div");
-  tasks.forEach(t=>{
-    const row = document.createElement("div");
-    row.className = "task";
-    row.innerHTML = `<div class="left">
-        <input type="checkbox" ${t.done ? "checked":""} data-id="${t.id}">
-        <div>
-          <div style="font-weight:700">${t.title}</div>
-          <small>Навык: ${t.skill} · Добавляет: ${t.addsToStat||"—"}</small>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        ${t.durationMin ? `<div class="chip">${t.durationMin} мин</div>` : ""}
-        <button class="doBtn" data-id="${t.id}">${t.done ? "Отменить" : "Выполнить"}</button>
-      </div>`;
-    list.appendChild(row);
-
-    // checkbox event
-    row.querySelector('input[type="checkbox"]').addEventListener("change", (e)=>{
-      const id = e.target.dataset.id;
-      toggleTaskDone(id, e.target.checked);
-      renderTasks();
-      updateCalendarForDay(today);
-      populateSkills();
-    });
-
-    row.querySelector(".doBtn").addEventListener("click", ()=>{
-      toggleTaskDone(t.id, !t.done);
-      renderTasks();
-      updateCalendarForDay(today);
-      populateSkills();
-    });
-  });
-
-  card.appendChild(list);
-  // small controls
-  const footer = document.createElement("div");
-  footer.style.marginTop="8px";
-  footer.className = "muted";
-  footer.innerHTML = `Система: каждое выполненное задание даёт <strong>${TASK_XP} XP</strong> в связанный навык/стат. Таймер навыка даёт 1 XP/мин.`;
-  card.appendChild(footer);
-}
-
-function toggleTaskDone(taskId, done){
-  const today = isoToday();
-  const tasks = state.tasksForDay[today] || [];
-  const t = tasks.find(x=>x.id===taskId);
-  if(!t) return;
-  // if marking done from false -> true: grant XP
-  if(!t.done && done){
-    // grant XP to skill or to stat
-    if(t.skill){
-      // add xp
-      if(!state.skills[t.skill]) state.skills[t.skill] = { xp:0 };
-      state.skills[t.skill].xp = (state.skills[t.skill].xp || 0) + TASK_XP;
-    }
-    // add to stat if addsToStat present
-    if(t.addsToStat){
-      if(state.stats[t.addsToStat] !== undefined){
-        state.stats[t.addsToStat] = (state.stats[t.addsToStat] || 0) + TASK_XP;
+  </div>  <script>
+    // ===== Вход по паролю =====
+    function checkPassword() {
+      const pass = document.getElementById("password").value;
+      if (pass === "1234") {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("system").style.display = "block";
+      } else {
+        document.getElementById("error").textContent = "Неверный пароль";
       }
     }
-    // mark for calendar
-    markTaskDoneForToday(t);
-  } else if(t.done && !done){
-    // undo: remove XP (best-effort)
-    if(t.skill && state.skills[t.skill]){
-      state.skills[t.skill].xp = Math.max(0, (state.skills[t.skill].xp || 0) - TASK_XP);
+
+    function showTab(id) {
+      document.querySelectorAll(".tab").forEach(tab => tab.style.display = "none");
+      document.getElementById(id).style.display = "block";
     }
-    if(t.addsToStat && state.stats[t.addsToStat] !== undefined){
-      state.stats[t.addsToStat] = Math.max(0, (state.stats[t.addsToStat] || 0) - TASK_XP);
-    }
-    unmarkTaskDoneForToday(t);
-  }
-  t.done = done;
-  saveState();
-  renderStats();
-}
 
-function markTaskDoneForToday(task){
-  const day = isoToday();
-  if(!state.calendar[day]) state.calendar[day] = { doneCount:0, tasks:[] };
-  state.calendar[day].doneCount = (state.calendar[day].doneCount || 0) + 1;
-  state.calendar[day].tasks.push(task.id || ("t"+Date.now()));
-  // clamp to 7
-  if(state.calendar[day].doneCount > 50) state.calendar[day].doneCount = 50;
-  saveState();
-}
+    // ===== Сохранение прогресса =====
+    const storageKey = "rpg_planner";
+    let data = JSON.parse(localStorage.getItem(storageKey)) || {
+      missedCount: 0,
+      tasks: {},
+    };
 
-function unmarkTaskDoneForToday(task){
-  const day = isoToday();
-  if(!state.calendar[day]) return;
-  state.calendar[day].doneCount = Math.max(0, (state.calendar[day].doneCount || 1) - 1);
-  const idx = state.calendar[day].tasks.indexOf(task.id);
-  if(idx !== -1) state.calendar[day].tasks.splice(idx,1);
-  saveState();
-}
+    document.querySelectorAll("#daily-tasks input").forEach((checkbox, i) => {
+      checkbox.checked = data.tasks[i] || false;
+      checkbox.addEventListener("change", () => {
+        data.tasks[i] = checkbox.checked;
+        saveData();
+      });
+    });
 
-// Manual regenerate tasks for today (button)
-document.getElementById("addDailyBtn").addEventListener("click", ()=>{
-  // create new set for today (replace)
-  delete state.tasksForDay[isoToday()];
-  prepareTasksForToday();
-  renderTasks();
-});
+    document.getElementById("missed-count").textContent = data.missedCount;
 
-// ---------- CALENDAR ----------
-function initCalendar(){
-  const now = new Date();
-  shownYear = now.getFullYear();
-  shownMonth = now.getMonth();
-  renderCalendar();
-  document.getElementById("prevMonth").addEventListener("click", ()=>{
-    shownMonth--;
-    if(shownMonth < 0){ shownMonth = 11; shownYear--; }
-    renderCalendar();
-  });
-  document.getElementById("nextMonth").addEventListener("click", ()=>{
-    shownMonth++;
-    if(shownMonth > 11){ shownMonth = 0; shownYear++; }
-    renderCalendar();
-  });
-  document.getElementById("viewToggle").addEventListener("click", ()=>{
-    viewMode = viewMode === "month" ? "year" : "month";
-    renderCalendar();
-  });
-}
-
-function renderCalendar(){
-  const grid = document.getElementById("calGrid");
-  grid.innerHTML = "";
-  const title = document.getElementById("calTitle");
-
-  if(viewMode === "month"){
-    title.innerText = new Date(shownYear, shownMonth).toLocaleString("ru", {month:"long", year:"numeric"});
-    // draw month grid (7 columns)
-    // first day of month
-    const first = new Date(shownYear, shownMonth, 1);
-    const startWeekDay = (first.getDay()+6)%7; // make monday=0
-    const daysInMonth = new Date(shownYear, shownMonth+1, 0).getDate();
-    // add empty cells for offset
-    for(let i=0;i<startWeekDay;i++){
-      const e = document.createElement("div");
-      e.className = "cal-cell";
-      grid.appendChild(e);
-    }
-    for(let d=1; d<=daysInMonth; d++){
-      const iso = `${shownYear}-${String(shownMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-      const cell = createCalCell(iso, d);
-      grid.appendChild(cell);
-    }
-    // fill to complete weeks (optional)
-    const totalCells = startWeekDay + daysInMonth;
-    const rem = (7 - (totalCells % 7)) % 7;
-    for(let i=0;i<rem;i++){
-      const e = document.createElement("div");
-      e.className = "cal-cell";
-      grid.appendChild(e);
-    }
-  } else {
-    // year view: show 12 small month blocks (simple)
-    title.innerText = shownYear;
-    // each cell will represent a month with small 7x5 grid
-    for(let m=0;m<12;m++){
-      const mini = document.createElement("div");
-      mini.style.gridColumn = "span 1";
-      mini.style.padding = "8px";
-      mini.style.borderRadius = "10px";
-      mini.style.background = "rgba(255,255,255,0.01)";
-      mini.style.border = "1px solid rgba(255,255,255,0.015)";
-      const monthName = new Date(shownYear, m).toLocaleString("ru", {month:"short"});
-      mini.innerHTML = `<div style="font-weight:700;margin-bottom:6px">${monthName}</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>`;
-      const inner = mini.querySelector("div > div");
-      const daysInMonth = new Date(shownYear, m+1, 0).getDate();
-      for(let d=1; d<=daysInMonth; d++){
-        const iso = `${shownYear}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-        const count = (state.calendar[iso] && state.calendar[iso].doneCount) || 0;
-        const c = document.createElement("div");
-        c.style.height="10px";
-        c.style.borderRadius="3px";
-        c.style.background = colorForCount(count);
-        inner.appendChild(c);
+    function completeMissedDay() {
+      const checkboxes = document.querySelectorAll("#missed-prayers .missed");
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      if (allChecked && data.missedCount > 0) {
+        data.missedCount--;
+        document.getElementById("missed-count").textContent = data.missedCount;
+        checkboxes.forEach(cb => cb.checked = false);
+        saveData();
+      } else {
+        alert("Отметь все 5 намазов, чтобы закрыть день!");
       }
-      grid.appendChild(mini);
     }
-  }
-}
 
-function createCalCell(iso, dayNum){
-  const cell = document.createElement("div");
-  const dayCount = (state.calendar[iso] && state.calendar[iso].doneCount) || 0;
-  let cls = "";
-  if(dayCount <= 2) cls = "color-0";
-  else if(dayCount <= 5) cls = "color-1";
-  else cls = "color-2";
-  cell.className = "cal-cell " + cls;
-  cell.innerHTML = `<div class="cell-num">${dayNum}</div>
-    <div style="flex:1"></div>
-    <div class="cell-badge">${dayCount} / 7</div>`;
-  // click to show list of tasks for that day (if any)
-  cell.addEventListener("click", ()=>{
-    const tasks = state.tasksForDay[iso] || [];
-    const tasksText = tasks.map(t=>`${t.title} — ${t.done ? "✓" : "✗"}`).join("\n");
-    alert(`День ${iso}\nВыполнено: ${dayCount}\nЗадания:\n${tasksText || "(нет заданий)"}`);
-  });
-  return cell;
-}
+    // ===== Календарь =====
+    let monthView = true;
+    function toggleView() {
+      monthView = !monthView;
+      renderCalendar();
+    }
 
-function updateCalendarForDay(iso){
-  renderCalendar();
-  saveState();
-}
-
-function colorForCount(n){
-  if(n <= 2) return "rgba(255,0,0,0.2)";
-  if(n <= 5) return "rgba(255,129,0,0.18)";
-  return "rgba(123,226,143,0.18)";
-}
-
-// ---------- HELPERS ----------
-function isoToday(){
-  return new Date().toISOString().slice(0,10);
-}
-
-function formatDateHuman(iso){
-  const d = new Date(iso);
-  return d.toLocaleDateString("ru");
-}
-
-function shuffleArray(a){
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-}
-
-function resetAll(){
-  if(!confirm("Сбросить все данные трекера? Это удалит прогресс.")) return;
-  localStorage.removeItem(LS_KEY);
-  state = loadState();
-  state.startDate = new Date().toISOString().slice(0,10);
-  saveState();
-  location.reload();
-}
-
-// ---------- UI CONTROLS ----------
-function attachControls(){
-  // update skill list daily button
-  document.getElementById("addDailyBtn").addEventListener("click", ()=>{
-    prepareTasksForToday();
-    renderTasks();
-  });
-
-  // prev/next month handled in initCalendar
-  // recalc skill selects when day changes
-  window.addEventListener("storage", ()=>{
-    state = loadState();
-    populateSkills();
-    renderTasks();
+    function renderCalendar() {
+      const grid = document.getElementById("calendar-grid");
+      grid.innerHTML = "";
+      const days = monthView ? 30 : 365;
+      for (let i = 1; i <= days; i++) {
+        let el = document.createElement("div");
+        el.className = "calendar-day red";
+        el.textContent = i;
+        grid.appendChild(el);
+      }
+    }
     renderCalendar();
-  });
-}
 
-function renderPeriodInfo(){
-  const start = new Date(state.startDate);
-  const months = monthDiff(start, new Date());
-  document.getElementById("periodInfo").innerText = `Прошло ${months} мес (полугодий: ${Math.floor(months/6)})`;
-}
-
-// ---------- Initial prepare if logged in by default (for dev) ----------
-/* Optionally auto-login: uncomment to auto show system (dev)
-document.getElementById("password").value = PASSWORD;
-tryLogin();
-*/
-
-</script>
-</body>
+    function saveData() {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    }
+  </script></body>
 </html>
