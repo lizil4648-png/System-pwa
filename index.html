@@ -1,252 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Система</title>
-
-  <!-- Стили -->
-  <link rel="stylesheet" href="styles.css" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <link rel="apple-touch-icon" href="favicon.png" sizes="512x512" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1, h2 { margin-bottom: 10px; }
+    button { margin-top: 5px; }
+    #tabs button { margin-right: 5px; }
+    .tabcontent { display: none; margin-top: 10px; }
+    .active { display: block; }
+  </style>
 </head>
 <body>
-  <!-- Экран входа -->
-  <div id="login-screen" class="container">
-    <h2>🔒 Вход в систему</h2>
-    <input type="password" id="password" placeholder="Введите пароль" />
-    <button onclick="checkPassword()">Войти</button>
-    <p id="error" class="error hidden">Неверный пароль</p>
-  </div>
 
-  <!-- Основной интерфейс -->
-  <div id="main-app" class="hidden">
-    <div class="container">
-      <img src="arise.png" alt="Arise" class="logo" />
-      <h1>Система</h1>
-      <div class="menu">
-        <button onclick="showPage('stats')">Статистика</button>
-        <button onclick="showPage('skills')">Навыки</button>
-        <button onclick="showPage('quests')">Задания</button>
-        <button onclick="showPage('calendar')">Календарь</button>
-      </div>
+  <h2>🔒 Вход в систему</h2>
+  <input type="password" id="password">
+  <button onclick="login()">Войти</button>
+  <p id="error" style="color:red; display:none;">Неверный пароль</p>
+
+  <!-- Система изначально скрыта -->
+  <div id="system" style="display:none;">
+    <h1>Система</h1>
+
+    <div id="tabs">
+      <button onclick="openTab('stats')">Статистика</button>
+      <button onclick="openTab('skills')">Навыки</button>
+      <button onclick="openTab('quests')">Задания</button>
+      <button onclick="openTab('calendar')">Календарь</button>
     </div>
 
-    <div id="content">
-      <!-- Статистика -->
-      <section id="stats" class="page hidden">
-        <h2>Статистика</h2>
-        <p>Сила: 10</p>
-        <p>Ловкость: 8</p>
-        <p>Живучесть: 12</p>
-        <p>Интеллект: 14</p>
-        <p>Духовность: 5</p>
-      </section>
+    <div id="stats" class="tabcontent active">
+      <h2>Статистика</h2>
+      <p>Сила: 10</p>
+      <p>Ловкость: 8</p>
+      <p>Живучесть: 12</p>
+      <p>Интеллект: 14</p>
+      <p>Духовность: 5</p>
+    </div>
 
-      <!-- Навыки -->
-      <section id="skills" class="page hidden">
-        <h2>Навыки</h2>
-        <ul>
-          <li>Физика</li>
-          <li>Математика</li>
-          <li>Химия</li>
-          <li>Рукопашный бой</li>
-          <li>Гибкость</li>
-          <li>Скорость</li>
-          <li>Английский</li>
-          <li>Ораторство</li>
-          <li>Копирайтинг</li>
-          <li>Нейронка</li>
-          <li>Финансовая грамотность</li>
-          <li>Изящность</li>
-          <li>Дисциплина</li>
-          <li>Стрессоустойчивость</li>
-          <li>Критическое мышление</li>
-          <li>Выучить 5 аятов из Корана</li>
-          <li>Ақида</li>
-          <li>Фиқх</li>
-          <li>Тасаууф</li>
-          <li>Рисование</li>
-          <li>Скорочтение</li>
-          <li>Чистоплотность</li>
-        </ul>
-      </section>
+    <div id="skills" class="tabcontent">
+      <h2>Навыки</h2>
+      <ul>
+        <li>Физика</li>
+        <li>Математика</li>
+        <li>Химия</li>
+        <li>Рукопашный бой</li>
+        <li>Гибкость</li>
+        <li>Скорость</li>
+        <li>Английский</li>
+        <li>Ораторство</li>
+      </ul>
+    </div>
 
-      <!-- Задания -->
-      <section id="quests" class="page hidden">
-        <h2>Задания</h2>
-        <ul id="quest-list"></ul>
-        <button onclick="generateDailyTasks()">🔄 Сгенерировать новые</button>
-      </section>
+    <div id="quests" class="tabcontent">
+      <h2>Задания</h2>
+      <p>Пока нет заданий.</p>
+    </div>
 
-      <!-- Календарь -->
-      <section id="calendar" class="page hidden">
-        <h2>Календарь прогресса</h2>
-        <div id="calendar-controls">
-          <button onclick="prevMonth()">⬅</button>
-          <span id="calendar-title"></span>
-          <button onclick="nextMonth()">➡</button>
-        </div>
-        <div id="calendar-grid"></div>
-        <button onclick="toggleYearView()">📅 Показать год</button>
-        <div id="year-grid" class="hidden"></div>
-      </section>
+    <div id="calendar" class="tabcontent">
+      <h2>Календарь</h2>
+      <p>Тут будет календарь.</p>
     </div>
   </div>
 
   <script>
-    // 🔑 Пароль для входа
-    const PASSWORD = "arise123";
+    function login() {
+      let pass = document.getElementById("password").value;
+      let system = document.getElementById("system");
+      let error = document.getElementById("error");
 
-    function checkPassword() {
-      const input = document.getElementById("password").value;
-      const error = document.getElementById("error");
-
-      if (input === PASSWORD) {
-        document.getElementById("login-screen").classList.add("hidden");
-        document.getElementById("main-app").classList.remove("hidden");
-        generateDailyTasks(); // сразу генерим задания
+      if (pass === "1234") { // замени "1234" на свой пароль
+        system.style.display = "block";
+        error.style.display = "none";
       } else {
-        error.classList.remove("hidden");
+        error.style.display = "block";
+        system.style.display = "none";
       }
     }
 
-    // Переключение страниц
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-      document.getElementById(pageId).classList.remove('hidden');
-
-      if (pageId === "calendar") {
-        renderCalendar(currentYear, currentMonth);
-      }
-    }
-
-    // 📋 Список навыков
-    const skills = [
-      "Физика","Математика","Химия","Рукопашный бой","Гибкость","Скорость",
-      "Английский","Ораторство","Копирайтинг","Нейронка","Финансовая грамотность",
-      "Изящность","Дисциплина","Стрессоустойчивость","Критическое мышление",
-      "Выучить 5 аятов из Корана","Ақида","Фиқх","Тасаууф",
-      "Рисование","Скорочтение","Чистоплотность"
-    ];
-
-    // 📌 Ежедневные задания
-    function generateDailyTasks() {
-      const questList = document.getElementById("quest-list");
-      questList.innerHTML = "";
-
-      // 5 намазов
-      const prayers = ["Фаджр","Зухр","Аср","Магриб","Иша"];
-      prayers.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = `Совершить ${p} (+1 Духовность)`;
-        questList.appendChild(li);
-      });
-
-      // Иногда ораза
-      if (Math.random() < 0.2) {
-        const li = document.createElement("li");
-        li.textContent = "Держать оразу сегодня (+2 Духовность)";
-        questList.appendChild(li);
-      }
-
-      // 2–3 случайных навыка
-      const shuffled = skills.sort(() => 0.5 - Math.random());
-      const randomTasks = shuffled.slice(0, Math.floor(Math.random() * 2) + 2);
-
-      randomTasks.forEach(skill => {
-        const li = document.createElement("li");
-        li.textContent = `Практиковать: ${skill} (+1 опыт)`;
-        questList.appendChild(li);
-      });
-    }
-
-    // 📅 Календарь
-    const now = new Date();
-    let currentMonth = now.getMonth();
-    let currentYear = now.getFullYear();
-
-    function renderCalendar(year, month) {
-      const calendarTitle = document.getElementById("calendar-title");
-      const calendarGrid = document.getElementById("calendar-grid");
-      const yearGrid = document.getElementById("year-grid");
-
-      const months = [
-        "Январь","Февраль","Март","Апрель","Май","Июнь",
-        "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"
-      ];
-      calendarTitle.textContent = months[month] + " " + year;
-
-      calendarGrid.innerHTML = "";
-      yearGrid.innerHTML = "";
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      // пустые клетки
-      for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
-        const empty = document.createElement("div");
-        empty.className = "day empty";
-        calendarGrid.appendChild(empty);
-      }
-
-      // дни
-      for (let d = 1; d <= daysInMonth; d++) {
-        const day = document.createElement("div");
-        day.className = "day";
-        day.textContent = d;
-
-        // для примера: случайный прогресс
-        const progress = Math.floor(Math.random() * 101);
-        if (progress < 20) day.style.background = "red";
-        else if (progress < 50) day.style.background = "yellow";
-        else if (progress < 80) day.style.background = "lightblue";
-        else day.style.background = "lightgreen";
-
-        calendarGrid.appendChild(day);
-      }
-    }
-
-    function prevMonth() {
-      currentMonth--;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      renderCalendar(currentYear, currentMonth);
-    }
-
-    function nextMonth() {
-      currentMonth++;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-      renderCalendar(currentYear, currentMonth);
-    }
-
-    function toggleYearView() {
-      const yearGrid = document.getElementById("year-grid");
-      yearGrid.classList.toggle("hidden");
-
-      if (!yearGrid.classList.contains("hidden")) {
-        renderYear(currentYear);
-      }
-    }
-
-    function renderYear(year) {
-      const yearGrid = document.getElementById("year-grid");
-      yearGrid.innerHTML = "";
-
-      for (let m = 0; m < 12; m++) {
-        const block = document.createElement("div");
-        block.className = "month-block";
-        block.innerHTML = `<h4>${m+1} месяц</h4>`;
-        yearGrid.appendChild(block);
-      }
+    function openTab(tabId) {
+      let contents = document.querySelectorAll(".tabcontent");
+      contents.forEach(c => c.style.display = "none");
+      document.getElementById(tabId).style.display = "block";
     }
   </script>
+
 </body>
 </html>
