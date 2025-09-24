@@ -1,92 +1,147 @@
+/* Общий стиль */
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at center, #0a0a0f, #000);
-  color: #f0f0f0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #0a0a2a, #1e0038, #2a0066);
+  color: #fff;
+  min-height: 100vh;
 }
 
-.container {
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
-}
-
-h1 {
+/* Glow эффект для текста */
+h2, h3 {
   text-align: center;
-  font-size: 2.2em;
-  margin-bottom: 20px;
+  color: #b08cff;
+  text-shadow: 0 0 10px #7d5dff, 0 0 20px #a27dff;
 }
 
-.glow {
-  color: #00e6e6;
-  text-shadow: 0 0 8px #00ffff, 0 0 20px #00cccc;
-}
-
-nav {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-}
-
-nav button {
-  background: transparent;
-  border: 2px solid #00e6e6;
-  color: #00e6e6;
-  padding: 10px;
-  border-radius: 8px;
+/* Кнопки */
+button {
+  background: #4c00ff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  margin: 8px 0;
+  border-radius: 10px;
+  font-size: 16px;
   cursor: pointer;
   transition: 0.3s;
+  box-shadow: 0 0 8px #6c3aff;
+}
+button:hover {
+  background: #7d3dff;
+  box-shadow: 0 0 15px #9f6dff, 0 0 25px #b08cff;
 }
 
-nav button:hover {
-  background: #00e6e6;
-  color: #000;
-  box-shadow: 0 0 10px #00ffff;
+/* Вход */
+#login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+#login input {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+#error {
+  color: #ff4c4c;
+  margin-top: 5px;
 }
 
-.screen {
+/* Навигация */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(30, 0, 60, 0.9);
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  color: #ccc;
+  transition: 0.3s;
+}
+.tab.active {
+  color: #fff;
+  text-shadow: 0 0 8px #7d5dff, 0 0 15px #b08cff;
+}
+
+/* Контент */
+.content {
+  padding: 15px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+.hidden {
   display: none;
 }
-
-.screen.active {
-  display: block;
-  animation: fadeIn 0.5s ease;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  margin: 8px 0;
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(0, 230, 230, 0.4);
-}
-
-button {
-  margin-left: 10px;
-  background: #ffcc00;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #ffaa00;
-}
-
 @keyframes fadeIn {
   from {opacity: 0;}
   to {opacity: 1;}
 }
-.logo {
-  display: block;
-  margin: 20px auto;
-  width: 200px;   /* уменьшаем ширину */
-  height: auto;   /* сохраняем пропорции */
-  filter: drop-shadow(0 0 20px #ffffffaa); /* мягкое свечение */
+
+/* Статы */
+.stat-bar {
+  margin: 10px 0;
+  font-size: 16px;
+}
+.bar {
+  background: rgba(255, 255, 255, 0.2);
+  height: 18px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.bar-fill {
+  background: linear-gradient(90deg, #4c00ff, #7d3dff, #b08cff);
+  height: 100%;
+  width: 0%;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 8px #7d3dff;
+}
+
+/* Список навыков */
+#skills-list li {
+  background: rgba(60, 0, 90, 0.5);
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 0 6px #5c2dff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Календарь */
+#calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 15px;
+}
+#calendar-grid div {
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+.day-red { background: rgba(255, 0, 0, 0.4); }
+.day-yellow { background: rgba(255, 255, 0, 0.4); color: black; }
+.day-green { background: rgba(0, 255, 0, 0.4); color: black; }
+
+/* Адаптивность */
+@media (max-width: 600px) {
+  h2 { font-size: 20px; }
+  h3 { font-size: 16px; }
+  button { font-size: 14px; padding: 8px 12px; }
+  .tab { font-size: 12px; padding: 8px 4px; }
 }
