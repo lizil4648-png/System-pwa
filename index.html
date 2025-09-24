@@ -1,717 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SoloLeveling · Tracker</title>
-  <style>
-    /* ---------- THEME: Solo Leveling (dark blue / purple glow) ---------- */
-    :root{
-      --bg:#020317;
-      --panel: rgba(10,12,25,0.85);
-      --accent1:#6f5cff;
-      --accent2:#00d4ff;
-      --accent3:#8e2de2;
-      --muted: rgba(255,255,255,0.65);
-      --card-radius:14px;
-      --glass: rgba(255,255,255,0.03);
-      --danger: #ff6b6b;
-      --warn: #ffd36b;
-      --ok: #7be28f;
-    }
-    html,body{height:100%;margin:0;background:radial-gradient(800px 400px at 10% 10%, #071133 0%, #020217 35%, #000 100%);font-family:Inter, "Trebuchet MS", system-ui, Arial;color:#e8eef8;-webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
-    *{box-sizing:border-box}
-    .app{
-      width:96%;
-      max-width:1200px;
-      height:92vh;
-      margin:2vh auto;
-      border-radius:var(--card-radius);
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border:1px solid rgba(110,92,255,0.12);
-      box-shadow:0 12px 40px rgba(0,0,0,0.7), inset 0 0 30px rgba(15,12,30,0.3);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-    }
-
-    /* Header */
-    header.top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:12px 16px;
-      gap:12px;
-      border-bottom:1px solid rgba(255,255,255,0.02);
-      background:linear-gradient(180deg, rgba(10,10,20,0.35), rgba(5,5,12,0.25));
-    }
-    .brand { display:flex; gap:12px; align-items:center; }
-    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent3));display:flex;align-items:center;justify-content:center;color:#021;font-weight:800;box-shadow:0 8px 30px rgba(110,92,255,0.12); font-size:16px;}
-    .title{font-weight:800;font-size:18px}
-    .subtitle{font-size:12px;color:var(--muted)}
-
-    /* Login area */
-    .login-area{display:flex;align-items:center;gap:8px}
-    input[type="password"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;min-width:150px}
-    button.btn{padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#042018;font-weight:800;cursor:pointer;box-shadow:0 10px 30px rgba(110,92,255,0.12)}
-    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:10px;cursor:pointer}
-    .error{color:var(--danger);font-size:13px;margin-left:8px}
-
-    /* Body layout */
-    .body{display:flex;flex:1;gap:18px;padding:14px;overflow:hidden}
-    .sidebar{width:320px;min-width:220px;display:flex;flex-direction:column;gap:12px}
-    .main{flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto;padding-right:6px}
-
-    .panel{background:var(--panel);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 18px rgba(0,0,0,0.5)}
-    .small-muted{color:var(--muted);font-size:13px}
-
-    /* Stats */
-    .stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .stat-name{font-weight:700}
-    .progress{height:12px;background:rgba(255,255,255,0.02);border-radius:8px;overflow:hidden;margin-top:6px}
-    .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent3));box-shadow:0 8px 28px rgba(142,45,226,0.08);transition:width .4s ease}
-
-    /* tabs in main */
-    .tabs-top{display:flex;gap:8px;align-items:center}
-    .tab-btn{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;font-weight:700}
-    .tab-btn.active{background:linear-gradient(90deg,var(--accent1),var(--accent3));color:#042018;box-shadow:0 10px 30px rgba(110,92,255,0.12)}
-
-    .content-area{padding:6px;overflow:auto}
-
-    /* tasks */
-    .task-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:rgba(255,255,255,0.01);margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
-    .task-meta{font-size:13px;color:var(--muted)}
-
-    /* calendar */
-    .cal-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-    .cal-cell{min-height:72px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column}
-    .cal-num{font-weight:700;font-size:13px;margin-bottom:6px}
-    .cal-badge{margin-top:auto;font-size:12px;padding:4px 6px;border-radius:999px;background:rgba(255,255,255,0.02);align-self:flex-end}
-
-    .color-red{background:linear-gradient(180deg, rgba(231,76,60,0.08), rgba(231,76,60,0.03));border-color:rgba(231,76,60,0.12)}
-    .color-yellow{background:linear-gradient(180deg, rgba(241,196,15,0.06), rgba(241,196,15,0.03));border-color:rgba(241,196,15,0.12)}
-    .color-green{background:linear-gradient(180deg, rgba(46,204,113,0.06), rgba(46,204,113,0.03));border-color:rgba(46,204,113,0.12)}
-
-    /* skill panels */
-    .skill-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:rgba(255,255,255,0.01);margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
-    .unavailable{opacity:0.45;font-style:italic;color:var(--muted)}
-
-    /* responsive */
-    @media (max-width:980px){
-      .body{flex-direction:column;gap:10px;padding:10px}
-      .sidebar{order:2;width:100%}
-      .main{order:1}
-      .cal-cell{min-height:56px}
-    }
-    @media (max-width:420px){
-      header.top{padding:8px}
-      .logo{width:40px;height:40px;font-size:14px}
-    }
-
-    /* small animation */
-    .fade-in{animation:fadeIn .3s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  </style>
+  <meta charset="UTF-8">
+  <title>Solo Leveling System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <div class="app">
-    <header class="top">
-      <div class="brand">
-        <div class="logo">SL</div>
-        <div>
-          <div class="title">SoloLeveling · Tracker</div>
-          <div class="subtitle">Твой персональный RPG-трекер</div>
-        </div>
-      </div>
-
-      <div class="login-area">
-        <div id="loginForm">
-          <input id="password" type="password" placeholder="Пароль (2309)">
-          <button id="loginBtn" class="btn">Войти</button>
-          <span id="loginError" class="error"></span>
-        </div>
-        <div id="logoutWrap" style="display:none">
-          <button id="logoutBtn" class="ghost">Выйти</button>
-        </div>
-      </div>
-    </header>
-
-    <div class="body">
-      <!-- SIDEBAR -->
-      <aside class="sidebar">
-        <!-- MAIN STATS PANEL -->
-        <div class="panel stats-panel">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Главная — Статы</div>
-            <div class="small-muted">Уровень: <span id="levelLabel">1</span></div>
-          </div>
-
-          <div style="margin-top:10px">
-            <div class="stat-row"><div class="stat-name">Сила</div><div class="small-muted" id="s_strength">0</div></div>
-            <div class="progress"><div id="p_strength" class="fill" style="width:0%"></div></div>
-
-            <div class="stat-row"><div class="stat-name">Интеллект</div><div class="small-muted" id="s_intellect">0</div></div>
-            <div class="progress"><div id="p_intellect" class="fill" style="width:0%"></div></div>
-
-            <div class="stat-row"><div class="stat-name">Духовность</div><div class="small-muted" id="s_spirit">0</div></div>
-            <div class="progress"><div id="p_spirit" class="fill" style="width:0%"></div></div>
-
-            <div class="stat-row"><div class="stat-name">Выносливость</div><div class="small-muted" id="s_endurance">0</div></div>
-            <div class="progress"><div id="p_endurance" class="fill" style="width:0%"></div></div>
-
-            <div class="stat-row"><div class="stat-name">Ловкость</div><div class="small-muted" id="s_agility">0</div></div>
-            <div class="progress"><div id="p_agility" class="fill" style="width:0%"></div></div>
-
-            <div class="stat-row"><div class="stat-name">Харизма</div><div class="small-muted" id="s_charisma">0</div></div>
-            <div class="progress"><div id="p_charisma" class="fill" style="width:0%"></div></div>
-
-            <div style="margin-top:10px">
-              <div class="small-muted">Общий XP: <span id="totalXP">0</span> / <span id="levelReq">150</span></div>
-              <div class="progress" style="margin-top:6px"><div id="p_total" class="fill" style="width:0%"></div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Skills select & timer -->
-        <div class="panel">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Навык + Таймер</div>
-            <div class="small-muted" id="periodInfo">Период: 0 мес</div>
-          </div>
-          <div style="margin-top:10px">
-            <label class="small-muted">Выбрать навык</label>
-            <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-              <select id="skillSelect" style="flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04)"></select>
-              <button id="skillStart" class="btn">Старт</button>
-              <button id="skillStop" class="ghost">Стоп</button>
-            </div>
-            <div style="margin-top:8px" class="small-muted">Таймер: <span id="skillTimer">00:00</span> — 1 мин = 0.5 XP</div>
-          </div>
-        </div>
-
-        <!-- Missed prayers -->
-        <div class="panel">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:800">Пропущенные намазы</div>
-            <div class="small-muted">Дней: <span id="missedCounter">620</span></div>
-          </div>
-          <div style="margin-top:8px" id="missedChecks">
-            <label><input type="checkbox" data-miss="fajr"> Фаджр</label><br>
-            <label><input type="checkbox" data-miss="zuhr"> Зухр</label><br>
-            <label><input type="checkbox" data-miss="asr"> Аср</label><br>
-            <label><input type="checkbox" data-miss="maghrib"> Магриб</label><br>
-            <label><input type="checkbox" data-miss="isha"> Иша</label><br>
-            <div style="margin-top:8px"><button id="closeMissed" class="btn">Закрыть день (−1)</button></div>
-            <div class="small-muted" style="margin-top:8px">Отмечай все 5 → день списывается</div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- MAIN -->
-      <main class="main">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="tabs-top">
-            <button class="tab-btn active" data-tab="main">Главная</button>
-            <button class="tab-btn" data-tab="daily">Ежедневные</button>
-            <button class="tab-btn" data-tab="skills">Навыки</button>
-            <button class="tab-btn" data-tab="calendar">Календарь</button>
-            <button class="tab-btn" data-tab="settings">Настройки</button>
-          </div>
-          <div class="small-muted">Данные хранятся локально</div>
-        </div>
-
-        <div class="content-area">
-          <!-- TAB: Main -->
-          <div class="tab-content" id="tab-main">
-            <div class="panel">
-              <h3>Главная</h3>
-              <div class="small-muted">Сводка по статам и уровню</div>
-              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
-                <div style="flex:1;min-width:220px" class="panel">
-                  <div style="font-weight:800">Уровень</div>
-                  <div style="font-size:28px;font-weight:800;margin-top:6px" id="bigLevel">1</div>
-                  <div class="small-muted" style="margin-top:8px">Достигай 150 XP — уровень повышается</div>
-                  <div style="margin-top:10px" class="progress"><div id="p_level_big" class="fill" style="width:0%"></div></div>
-                  <div class="small-muted" style="margin-top:6px">Общий XP: <span id="bigXP">0</span>/150</div>
-                </div>
-
-                <div style="flex:1;min-width:260px" class="panel">
-                  <div style="font-weight:800">Краткая статистика</div>
-                  <div style="margin-top:8px" id="miniStats"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB: Daily -->
-          <div class="tab-content hidden" id="tab-daily">
-            <div class="panel">
-              <h3>Ежедневные задания (сегодня)</h3>
-              <div class="small-muted">Каждое выполненное задание даёт <strong>0.5 HP</strong> в связанный стат.</div>
-              <div id="tasksToday" style="margin-top:12px"></div>
-              <div style="margin-top:8px"><button id="regenTasks" class="ghost">Обновить задания на сегодня</button></div>
-            </div>
-          </div>
-
-          <!-- TAB: Skills -->
-          <div class="tab-content hidden" id="tab-skills_main">
-            <div class="panel">
-              <h3>Навыки (весь список)</h3>
-              <div class="small-muted">Доступные навыки имеют таймер справа; недоступные отмечены как «недоступен».</div>
-              <div id="skillsFullList" style="margin-top:10px"></div>
-            </div>
-          </div>
-
-          <!-- TAB: Calendar -->
-          <div class="tab-content hidden" id="tab-calendar_main">
-            <div class="panel">
-              <h3>Календарь</h3>
-              <div class="cal-controls">
-                <div>
-                  <button id="prevMonth" class="ghost">◀</button>
-                  <button id="nextMonth" class="ghost">▶</button>
-                  <span id="calTitle" style="margin-left:10px;font-weight:700"></span>
-                </div>
-                <div>
-                  <button id="viewModeToggle" class="ghost">Месяц/Год</button>
-                </div>
-              </div>
-              <div id="calendarGrid" class="cal-grid"></div>
-            </div>
-          </div>
-
-          <!-- TAB: Settings -->
-          <div class="tab-content hidden" id="tab-settings">
-            <div class="panel">
-              <h3>Настройки</h3>
-              <div class="small-muted">Дата старта для расчёта периодов (по умолчанию — сегодня)</div>
-              <div style="margin-top:8px">
-                <label>Дата старта: <input id="startDate" type="date"></label>
-                <div style="margin-top:8px">
-                  <label>Нач. счетчик пропущенных дней: <input id="missedInit" type="number" min="0" style="width:110px"></label>
-                  <button id="applySettings" class="btn">Применить</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </main>
-    </div>
+  <!-- Экран входа -->
+  <div id="login">
+    <h2>Введите пароль</h2>
+    <input type="password" id="password" placeholder="Пароль">
+    <button onclick="checkPassword()">Войти</button>
+    <div id="error"></div>
   </div>
 
-<script>
-/* ================= CONFIG ================= */
-const PASSWORD = "2309";
-const TASK_XP = 0.5;
-const TIMER_XP_PER_MIN = 0.5;
-const LEVEL_REQ = 150;
-const LS_KEY = "sl_tracker_v1";
+  <!-- Основная система -->
+  <div id="system" class="hidden">
+    <!-- Навигация -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('main')">Главная</div>
+      <div class="tab" onclick="showTab('tasks')">Задания</div>
+      <div class="tab" onclick="showTab('skills')">Навыки</div>
+      <div class="tab" onclick="showTab('calendar')">Календарь</div>
+      <div class="tab" onclick="showTab('missed')">Пропущенные намазы</div>
+    </div>
 
-/* Full skills list and waves */
-const ALL_SKILLS = [
-  "математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование",
-  "физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение",
-  "химия","Коран (5 аятов)","ақида","фиқх","тасаууф","критическое мышление","копирайтинг","скорость",
-  "английский","арабский"
-];
-const WAVES = {
-  0: ["математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование"],
-  1: ["физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение"],
-  2: ["химия","Коран (5 аятов)","ақида","фиқх","тасаууф","критическое мышление","копирайтинг","скорость"]
-};
-const ALWAYS = ["английский","арабский"];
-const SKILL_TO_STAT = {
-  "математика":"intellect","гибкость":"agility","изящность":"charisma","дисциплина":"endurance","финансовая грамотность":"intellect","рисование":"charisma",
-  "физика":"intellect","рукопашный бой":"strength","стрессоустойчивость":"endurance","чистоплотность":"endurance","ораторство":"charisma","скорочтение":"intellect",
-  "химия":"intellect","Коран (5 аятов)":"spirit","ақида":"spirit","фиқх":"spirit","тасаууф":"spirit","критическое мышление":"intellect","копирайтинг":"intellect","скорость":"agility",
-  "английский":"intellect","арабский":"intellect"
-};
+    <div class="content">
+      <!-- Главная -->
+      <div id="main">
+        <h2>Статы</h2>
+        <div class="stat-bar">Сила <div class="bar"><div class="bar-fill" id="strength"></div></div></div>
+        <div class="stat-bar">Духовность <div class="bar"><div class="bar-fill" id="spirit"></div></div></div>
+        <div class="stat-bar">Интеллект <div class="bar"><div class="bar-fill" id="intellect"></div></div></div>
+        <div class="stat-bar">Выносливость <div class="bar"><div class="bar-fill" id="endurance"></div></div></div>
+        <div class="stat-bar">Ловкость <div class="bar"><div class="bar-fill" id="agility"></div></div></div>
+        <div class="stat-bar">Харизма <div class="bar"><div class="bar-fill" id="charisma"></div></div></div>
 
-/* ================= STATE ================= */
-let state = JSON.parse(localStorage.getItem(LS_KEY)) || {
-  startDate: new Date().toISOString().slice(0,10),
-  stats: { strength:0, spirit:0, intellect:0, endurance:0, agility:0, charisma:0 },
-  totalXP: 0,
-  level: 1,
-  tasksByDay: {}, // yyyy-mm-dd => tasks array
-  calendar: {},    // yyyy-mm-dd => { doneCount, tasks[] }
-  missed: { counter: 620, partial: {} }, // partial holds e.g. { fajr:true, ... }
-  skillsXP: {}, // skill => xp
-  timers: {}    // skill => minutes accumulated (display only)
-};
-saveState();
-
-/* ================= HELPERS ================= */
-function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-function isoToday(){ return new Date().toISOString().slice(0,10); }
-function pad(n){ return String(n).padStart(2,'0'); }
-function monthDiff(a,b){ return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()); }
-function getWaveIndexForDate(dateIso){
-  const start = new Date(state.startDate);
-  const d = new Date(dateIso || isoToday());
-  const months = monthDiff(start,d);
-  return Math.min(2, Math.floor(months/6));
-}
-function getAvailableSkills(dateIso){
-  const idx = getWaveIndexForDate(dateIso);
-  const wave = WAVES[idx] || [];
-  const set = new Set([...ALWAYS, ...wave]);
-  return ALL_SKILLS.filter(s => set.has(s));
-}
-
-/* ================= LOGIN ================= */
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const passwordInput = document.getElementById('password');
-const loginError = document.getElementById('loginError');
-
-loginBtn.addEventListener('click', tryLogin);
-passwordInput.addEventListener('keyup',(e)=>{ if(e.key==='Enter') tryLogin(); });
-logoutBtn.addEventListener('click', ()=>location.reload());
-
-function tryLogin(){
-  if(passwordInput.value === PASSWORD){
-    document.getElementById('loginForm').style.display='none';
-    document.getElementById('logoutWrap').style.display='block';
-    initAfterLogin();
-  } else {
-    loginError.innerText = "Неверный пароль";
-  }
-}
-
-/* ================= INIT UI AFTER LOGIN ================= */
-function initAfterLogin(){
-  // show main content (app already visible), set up handlers
-  updatePeriodInfo();
-  renderSidebarStats();
-  prepareTasksForDay(isoToday());
-  renderTasksToday();
-  populateSkillSelect();
-  renderSkillsFull();
-  renderCalendar(); // default month
-  renderMissedUI();
-  // ensure only main tab visible
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  const mainBtn = document.querySelector('.tab-btn[data-tab="main"]'); if(mainBtn) mainBtn.classList.add('active');
-  document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.add('hidden'));
-  document.getElementById('tab-main').classList.remove('hidden');
-}
-
-/* ================= Sidebar: stats rendering & XP/level ================= */
-function renderSidebarStats(){
-  const s = state.stats;
-  document.getElementById('s_strength').innerText = round2(s.strength);
-  document.getElementById('p_strength').style.width = Math.min(s.strength,100) + '%';
-
-  document.getElementById('s_intellect').innerText = round2(s.intellect);
-  document.getElementById('p_intellect').style.width = Math.min(s.intellect,100) + '%';
-
-  document.getElementById('s_spirit').innerText = round2(s.spirit);
-  document.getElementById('p_spirit').style.width = Math.min(s.spirit,100) + '%';
-
-  document.getElementById('s_endurance').innerText = round2(s.endurance);
-  document.getElementById('p_endurance').style.width = Math.min(s.endurance,100) + '%';
-
-  document.getElementById('s_agility').innerText = round2(s.agility);
-  document.getElementById('p_agility').style.width = Math.min(s.agility,100) + '%';
-
-  document.getElementById('s_charisma').innerText = round2(s.charisma);
-  document.getElementById('p_charisma').style.width = Math.min(s.charisma,100) + '%';
-
-  document.getElementById('levelLabel').innerText = state.level;
-  document.getElementById('totalXP').innerText = round2(state.totalXP);
-  document.getElementById('p_total').style.width = Math.min(100, (state.totalXP/LEVEL_REQ)*100) + '%';
-
-  // main page big level
-  document.getElementById('bigLevel').innerText = state.level;
-  document.getElementById('bigXP').innerText = round2(state.totalXP);
-  document.getElementById('p_level_big').style.width = Math.min(100,(state.totalXP/LEVEL_REQ)*100)+'%';
-
-  // mini stats
-  document.getElementById('miniStats').innerHTML = `
-    <div class="small-muted">Сила: ${round2(s.strength)}</div>
-    <div class="small-muted">Интеллект: ${round2(s.intellect)}</div>
-    <div class="small-muted">Духовность: ${round2(s.spirit)}</div>
-  `;
-}
-function round2(n){ return Math.round(n*100)/100; }
-
-/* when granting xp to stat */
-function grantXP(statKey, xp){
-  if(!state.stats[statKey]) state.stats[statKey]=0;
-  state.stats[statKey] += xp;
-  state.totalXP += xp;
-  // level up loop
-  while(state.totalXP >= LEVEL_REQ){
-    state.level++;
-    state.totalXP -= LEVEL_REQ;
-  }
-  saveState();
-  renderSidebarStats();
-}
-
-/* ================= DAILY TASKS ================= */
-function prepareTasksForDay(dateIso){
-  if(state.tasksByDay[dateIso]) return;
-  const tasks = [];
-  const prayers = ["Фаджр","Зухр","Аср","Магриб","Иша"];
-  prayers.forEach(p => tasks.push({ id: dateIso + "_pr_"+p, title:p, type:'prayer', stat:'spirit', xp: TASK_XP, done:false }));
-  tasks.push({ id: dateIso + "_ex", title:'15 мин упражнение', type:'exercise', stat:'strength', xp: TASK_XP, duration:15, done:false });
-  if(Math.random() < 0.2) tasks.push({ id: dateIso + "_or", title:'Ораза (шанс)', type:'oraza', stat:'spirit', xp: TASK_XP, done:false });
-  const avail = getAvailableSkills(dateIso).filter(s => s !== "Коран (5 аятов)");
-  shuffle(avail);
-  const picks = avail.slice(0,2);
-  picks.forEach((s,idx)=> tasks.push({ id: dateIso + "_sk_"+idx, title:"Навыковое: "+s, type:'skill', skill:s, stat: SKILL_TO_STAT[s] || 'intellect', xp: TASK_XP, done:false }));
-  state.tasksByDay[dateIso] = tasks;
-  saveState();
-}
-function renderTasksToday(dateIso){
-  const day = dateIso || isoToday();
-  prepareTasksForDay(day);
-  const list = document.getElementById('tasksToday');
-  list.innerHTML = '';
-  (state.tasksByDay[day] || []).forEach(t=>{
-    const row = document.createElement('div');
-    row.className = 'task-row';
-    row.innerHTML = `<div>
-        <div style="font-weight:700">${t.title}</div>
-        <div class="task-meta">${t.type}${t.duration?(' · '+t.duration+' мин'):''}</div>
+        <h3>Уровень: <span id="level">1</span></h3>
+        <div class="stat-bar">Прогресс уровня <div class="bar"><div class="bar-fill" id="level-progress"></div></div></div>
       </div>
-      <div>
-        <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" data-id="${t.id}" ${t.done?'checked':''}> Выполнено</label>
-      </div>`;
-    list.appendChild(row);
-    const cb = row.querySelector('input[type="checkbox"]');
-    cb.addEventListener('change', (e)=>{ toggleTaskDone(day, t.id, e.target.checked); });
-  });
-}
-document.getElementById('regenTasks').addEventListener('click', ()=>{
-  delete state.tasksByDay[isoToday()];
-  prepareTasksForDay(isoToday());
-  renderTasksToday();
-});
 
-/* toggle task done */
-function toggleTaskDone(day, id, done){
-  const tasks = state.tasksByDay[day] || [];
-  const t = tasks.find(x=>x.id===id);
-  if(!t) return;
-  if(done && !t.done){
-    t.done = true;
-    // grant xp
-    grantXP(t.stat, t.xp);
-    if(t.type==='skill'){
-      state.skillsXP[t.skill] = (state.skillsXP[t.skill]||0) + t.xp;
-    }
-    // update calendar
-    if(!state.calendar[day]) state.calendar[day] = { doneCount:0, tasks:[] };
-    state.calendar[day].doneCount = (state.calendar[day].doneCount||0) + 1;
-    state.calendar[day].tasks.push(t.id);
-  } else if(!done && t.done){
-    t.done = false;
-    // try undo xp (best-effort)
-    state.stats[t.stat] = Math.max(0, (state.stats[t.stat]||0) - t.xp);
-    state.totalXP = Math.max(0, state.totalXP - t.xp);
-    if(t.type==='skill') state.skillsXP[t.skill] = Math.max(0, (state.skillsXP[t.skill]||0) - t.xp);
-    if(state.calendar[day]){ state.calendar[day].doneCount = Math.max(0, state.calendar[day].doneCount-1); const idx=state.calendar[day].tasks.indexOf(t.id); if(idx>-1) state.calendar[day].tasks.splice(idx,1); }
-  }
-  saveState();
-  renderTasksToday(day);
-  renderCalendar();
-  renderSidebarStats();
-}
+      <!-- Задания -->
+      <div id="tasks" class="hidden">
+        <h2>Ежедневные задания</h2>
+        <div><input type="checkbox" onchange="addXP('spirit',0.5)"> Фаджр</div>
+        <div><input type="checkbox" onchange="addXP('spirit',0.5)"> Зухр</div>
+        <div><input type="checkbox" onchange="addXP('spirit',0.5)"> Аср</div>
+        <div><input type="checkbox" onchange="addXP('spirit',0.5)"> Магриб</div>
+        <div><input type="checkbox" onchange="addXP('spirit',0.5)"> Иша</div>
+        <div><input type="checkbox" onchange="addXP('strength',0.5)"> Упражнение (15 мин)</div>
+      </div>
 
-/* ================= MISSed PRAYERS ================= */
-function renderMissedUI(){
-  document.getElementById('missedCounter').innerText = state.missed.counter;
-  const inputs = document.querySelectorAll('#missedChecks input[type="checkbox"]');
-  inputs.forEach(inp=>{
-    const key = inp.getAttribute('data-miss');
-    inp.checked = !!state.missed.partial[key];
-    inp.addEventListener('change', ()=>{
-      state.missed.partial[key] = inp.checked;
-      saveState();
-    });
-  });
-}
-document.getElementById('closeMissed').addEventListener('click', ()=>{
-  const keys = ['fajr','zuhr','asr','maghrib','isha'];
-  const all = keys.every(k=> !!state.missed.partial[k]);
-  if(all && state.missed.counter>0){
-    state.missed.counter--;
-    state.missed.partial = {};
-    saveState();
-    renderMissedUI();
-    alert('День закрыт — счётчик уменьшен на 1');
-  } else {
-    alert('Отметь все 5 намазов, чтобы закрыть день.');
-  }
-});
+      <!-- Навыки -->
+      <div id="skills" class="hidden">
+        <h2>Навыки</h2>
+        <ul id="skills-list">
+          <!-- Пример -->
+          <li>Математика — <span id="math-status">таймер</span></li>
+          <li>Физика — <span id="phys-status">недоступен</span></li>
+        </ul>
+      </div>
 
-/* ================= SKILLS list & timer ================= */
-function populateSkillSelect(){
-  const sel = document.getElementById('skillSelect');
-  sel.innerHTML = '';
-  const avail = getAvailableSkills();
-  avail.forEach(s=>{
-    const opt = document.createElement('option');
-    opt.value = s; opt.textContent = s;
-    sel.appendChild(opt);
-  });
-  // ensure timers entry
-  avail.forEach(s=>{ if(!state.timers[s]) state.timers[s]=0; });
-}
-function renderSkillsFull(){
-  const box = document.getElementById('skillsFullList');
-  box.innerHTML = '';
-  const avail = getAvailableSkills();
-  ALL_SKILLS.forEach(s=>{
-    const el = document.createElement('div');
-    el.className = 'skill-item';
-    const xp = round2(state.skillsXP[s]||0);
-    if(avail.includes(s)){
-      el.innerHTML = `<div style="font-weight:700">${s}</div><div class="small-muted">${xp} XP</div>`;
-    } else {
-      el.innerHTML = `<div style="font-weight:700">${s}</div><div class="unavailable">недоступен</div>`;
-    }
-    box.appendChild(el);
-  });
-}
+      <!-- Календарь -->
+      <div id="calendar" class="hidden">
+        <h2>Календарь</h2>
+        <div>
+          <button onclick="renderCalendar('month')">Месяц</button>
+          <button onclick="renderCalendar('year')">Год</button>
+        </div>
+        <div id="calendar-grid"></div>
+      </div>
 
-/* TIMER for skills */
-let timerState = { running:false, skill:null, seconds:0, intervalId:null };
-document.getElementById('skillStart').addEventListener('click', ()=>{
-  if(timerState.running) return;
-  const skill = document.getElementById('skillSelect').value;
-  if(!skill){ alert('Выбери навык'); return; }
-  timerState.running = true; timerState.skill = skill; timerState.seconds = 0;
-  document.getElementById('skillStart').disabled = true; document.getElementById('skillStop').disabled=false;
-  timerState.intervalId = setInterval(()=>{
-    timerState.seconds++;
-    updateTimerDisplay();
-  },1000);
-});
-document.getElementById('skillStop').addEventListener('click', ()=>{
-  if(!timerState.running) return;
-  clearInterval(timerState.intervalId);
-  timerState.running=false;
-  document.getElementById('skillStart').disabled=false; document.getElementById('skillStop').disabled=true;
-  const minutes = Math.floor(timerState.seconds/60);
-  if(minutes>0){
-    const gain = minutes * TIMER_XP_PER_MIN;
-    state.skillsXP[timerState.skill] = (state.skillsXP[timerState.skill]||0) + gain;
-    const statFor = SKILL_TO_STAT[timerState.skill] || 'intellect';
-    grantXP(statFor, gain);
-    saveState();
-    alert(`+${gain} XP к навыку ${timerState.skill}`);
-    renderSkillsFull();
-  } else {
-    alert('Меньше 1 минуты — XP не начислено');
-  }
-  timerState.skill=null; timerState.seconds=0; updateTimerDisplay();
-});
-function updateTimerDisplay(){ const s=timerState.seconds; const mm=pad(Math.floor(s/60)); const ss=pad(s%60); document.getElementById('skillTimer').innerText = `${mm}:${ss}`; }
-
-/* ================= CALENDAR ================= */
-let calMode = 'month';
-let shownYear = new Date().getFullYear();
-let shownMonth = new Date().getMonth();
-document.getElementById('viewModeToggle').addEventListener('click', ()=>{ calMode = calMode==='month'?'year':'month'; renderCalendar(); });
-document.getElementById('prevMonth').addEventListener('click', ()=>{ if(calMode==='month'){ shownMonth--; if(shownMonth<0){ shownMonth=11; shownYear--; } } else { shownYear--; } renderCalendar(); });
-document.getElementById('nextMonth').addEventListener('click', ()=>{ if(calMode==='month'){ shownMonth++; if(shownMonth>11){ shownMonth=0; shownYear++; } } else { shownYear++; } renderCalendar(); });
-
-function renderCalendar(){
-  const grid = document.getElementById('calendarGrid');
-  grid.innerHTML = '';
-  const calTitle = document.getElementById('calTitle');
-  if(calMode==='month'){
-    calTitle.innerText = new Date(shownYear, shownMonth, 1).toLocaleString('ru',{month:'long', year:'numeric'});
-    const first = new Date(shownYear, shownMonth,1);
-    const startWeek = (first.getDay()+6)%7; // monday=0
-    const daysInMonth = new Date(shownYear, shownMonth+1,0).getDate();
-    for(let i=0;i<startWeek;i++){ const e=document.createElement('div'); e.className='cal-cell'; grid.appendChild(e); }
-    for(let d=1; d<=daysInMonth; d++){
-      const iso = `${shownYear}-${pad(shownMonth+1)}-${pad(d)}`;
-      const cell = document.createElement('div'); cell.className='cal-cell';
-      const info = state.calendar[iso] || { doneCount:0, tasks:[] };
-      const cnt = info.doneCount || 0;
-      if(cnt <= 3) cell.classList.add('color-red');
-      else if(cnt <=5) cell.classList.add('color-yellow');
-      else cell.classList.add('color-green');
-      cell.innerHTML = `<div class="cal-num">${d}</div><div style="flex:1"></div><div class="cal-badge">${cnt} / 9</div>`;
-      cell.addEventListener('click', ()=>{ const tasks = (state.tasksByDay[iso]||[]).map(t=>`${t.title} — ${t.done? '✓':'✗'}`).join('\n') || '(нет заданий)'; alert(`${iso}\nВыполнено: ${cnt}\nЗадания:\n${tasks}`); });
-      grid.appendChild(cell);
-    }
-    const total = startWeek + daysInMonth; const rem = (7 - (total % 7)) % 7;
-    for(let i=0;i<rem;i++){ const e=document.createElement('div'); e.className='cal-cell'; grid.appendChild(e); }
-  } else {
-    calTitle.innerText = shownYear;
-    for(let m=0;m<12;m++){
-      const mini = document.createElement('div'); mini.style.padding='8px'; mini.style.borderRadius='10px'; mini.style.background='rgba(255,255,255,0.01)'; mini.style.border='1px solid rgba(255,255,255,0.02)';
-      mini.innerHTML = `<div style="font-weight:700;margin-bottom:6px">${new Date(shownYear,m,1).toLocaleString('ru',{month:'short'})}</div>`;
-      const inner = document.createElement('div'); inner.style.display='grid'; inner.style.gridTemplateColumns='repeat(7,12px)'; inner.style.gap='4px';
-      const days = new Date(shownYear,m+1,0).getDate();
-      for(let d=1; d<=days; d++){
-        const iso = `${shownYear}-${pad(m+1)}-${pad(d)}`;
-        const cnt = (state.calendar[iso] && state.calendar[iso].doneCount) || 0;
-        const s = document.createElement('div'); s.style.width='12px'; s.style.height='10px'; s.style.borderRadius='3px'; s.style.background = cnt<=3? 'rgba(231,76,60,0.9)': (cnt<=5? 'rgba(241,196,15,0.9)': 'rgba(46,204,113,0.9)');
-        inner.appendChild(s);
-      }
-      mini.appendChild(inner);
-      grid.appendChild(mini);
-    }
-  }
-}
-
-/* ================= PERIOD INFO ================= */
-function updatePeriodInfo(){
-  const start = new Date(state.startDate);
-  const months = monthDiff(start, new Date());
-  document.getElementById('periodInfo').innerText = `Прошло ${months} мес`;
-}
-
-/* ================= SETTINGS APPLY ================= */
-document.getElementById('startDate').value = state.startDate;
-document.getElementById('missedInit').value = state.missed.counter;
-document.getElementById('applySettings').addEventListener('click', ()=>{
-  const sd = document.getElementById('startDate').value;
-  const mInit = parseInt(document.getElementById('missedInit').value) || state.missed.counter;
-  if(sd) state.startDate = sd;
-  state.missed.counter = mInit;
-  saveState();
-  updatePeriodInfo();
-  renderMissedUI();
-  alert('Настройки сохранены');
-});
-
-/* ================= UI TABS wiring ================= */
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    const t = btn.getAttribute('data-tab');
-    document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.add('hidden'));
-    if(t==='main') document.getElementById('tab-main').classList.remove('hidden');
-    if(t==='daily'){ document.getElementById('tab-daily').classList.remove('hidden'); renderTasksToday(); }
-    if(t==='skills'){ document.getElementById('tab-skills_main').classList.remove('hidden'); populateSkillSelect(); renderSkillsFull(); }
-    if(t==='calendar'){ document.getElementById('tab-calendar_main').classList.remove('hidden'); renderCalendar(); }
-    if(t==='settings'){ document.getElementById('tab-settings').classList.remove('hidden'); }
-  });
-});
-
-/* ================= UTILITIES ================= */
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-
-/* ================= INITIAL RENDER (before login minimal) ================= */
-renderSidebarStats(); // show basic numbers (but main content hidden until login)
-renderMissedUI();
-
-/* Expose state for debugging */
-window._state = state;
-window._save = saveState;
-
-</script>
+      <!-- Пропущенные намазы -->
+      <div id="missed" class="hidden">
+        <h2>Пропущенные намазы</h2>
+        <p>Осталось дней: <span id="missed-count">620</span></p>
+        <div>
+          <input type="checkbox" id="m-fajr"> Фаджр<br>
+          <input type="checkbox" id="m-zuhr"> Зухр<br>
+          <input type="checkbox" id="m-asr"> Аср<br>
+          <input type="checkbox" id="m-maghrib"> Магриб<br>
+          <input type="checkbox" id="m-isha"> Иша<br>
+        </div>
+        <button onclick="completeMissed()">Завершить день</button>
+      </div>
+    </div>
+  </div>
 </body>
-  </html>
+</html>
