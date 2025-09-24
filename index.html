@@ -1,310 +1,849 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Solo Leveling System</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>SoloLeveling · RPG Tracker</title>
   <style>
-    /* === Общий стиль === */
-    body {
-      margin: 0;
-      font-family: "Trebuchet MS", sans-serif;
-      background: radial-gradient(circle at top, #0d0d1a, #000);
-      color: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
+    /* === Solo Leveling-like dark UI (glow, smooth) === */
+    :root{
+      --bg0:#05060a; --bg1:#071025; --panel:rgba(10,12,20,0.8);
+      --accent1:#6f5cff; --accent2:#00d4ff; --accent3:#8e2de2;
+      --muted:rgba(255,255,255,0.6);
+      --radius:14px;
     }
-    h2, h3, p, span {
-      text-shadow: 0 0 8px #6a5acd, 0 0 12px #8a2be2;
-    }
-
-    /* Панели */
-    .login-container, .system {
-      width: 95%;
-      max-width: 1000px;
-      height: 90%;
-      background: rgba(20,20,30,0.9);
-      border: 2px solid #4a00e0;
-      border-radius: 15px;
-      box-shadow: 0 0 25px #4a00e0, inset 0 0 20px #111;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      animation: fadeIn 1s ease;
-    }
-    .hidden { display: none; }
-
-    /* Анимация появления */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+    html,body{height:100%;margin:0;font-family:Inter, "Trebuchet MS", system-ui, Arial; background: radial-gradient(1200px 600px at 10% 10%, #071133 0%, #02020a 35%, #000 100%); color:#eaeef8;}
+    /* center container */
+    .app {
+      width: 96%;
+      max-width:1200px;
+      height: 92vh;
+      margin: 2vh auto;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 8px 40px rgba(5,6,10,0.8), inset 0 0 30px rgba(110,92,255,0.03);
+      border: 1px solid rgba(110,92,255,0.12);
+      display:flex; flex-direction:column; overflow:hidden;
     }
 
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      background: #111;
-      color: #fff;
-      box-shadow: 0 0 10px #4a00e0;
+    /* Header */
+    header.top {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 18px; gap:12px;
+      border-bottom:1px solid rgba(255,255,255,0.02);
+      background:linear-gradient(180deg, rgba(10,10,20,0.35), rgba(5,5,12,0.25));
     }
-    input:focus {
-      outline: none;
-      box-shadow: 0 0 15px #8e2de2;
+    .brand { display:flex; gap:12px; align-items:center; }
+    .logo {
+      width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent3));box-shadow:0 6px 20px rgba(110,92,255,0.16), 0 0 20px rgba(142,45,226,0.12) inset;
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#051; font-size:18px; color: #fff;
     }
-    button {
-      cursor: pointer;
-      transition: 0.3s;
+    .title { font-size:18px; font-weight:700; letter-spacing:0.4px; text-shadow:0 0 10px rgba(110,92,255,0.2); }
+    .subtitle { font-size:12px; color:var(--muted); margin-top:2px; }
+
+    /* login box */
+    .login-box {
+      display:flex; gap:8px; align-items:center;
     }
-    button:hover {
-      background: #4a00e0;
-      box-shadow: 0 0 20px #8e2de2;
+    input[type="password"]{ padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:rgba(255,255,255,0.02); color:inherit; min-width:140px; }
+    button.btn { padding:8px 12px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:#021; border:none; border-radius:10px; cursor:pointer; font-weight:700; box-shadow:0 8px 18px rgba(110,92,255,0.18); }
+    button.ghost { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); box-shadow:none; padding:8px 10px; }
+
+    .error { color:#ff7b7b; font-size:13px; margin-left:8px; }
+
+    /* body layout: sidebar + main */
+    .body {
+      display:flex; gap:18px; padding:18px; height: calc(100% - 72px); box-sizing:border-box;
+    }
+    /* sidebar: stats + skills list */
+    .sidebar { width:320px; min-width:220px; max-width:360px; display:flex; flex-direction:column; gap:12px; }
+    .panel { background:var(--panel); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+
+    .stats-list .stat-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .stat-row .label{ font-weight:700; }
+    .small-muted{ color:var(--muted); font-size:13px; }
+
+    .progress { height:12px; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; margin-top:6px; }
+    .progress .fill { height:100%; width:0%; background:linear-gradient(90deg,var(--accent1),var(--accent3)); box-shadow:0 6px 18px rgba(110,92,255,0.12); transition:width .4s ease; }
+
+    /* skills selector + timer */
+    .skills-select { display:flex; gap:8px; align-items:center; margin-top:6px; }
+    select { padding:8px; border-radius:8px; background:rgba(255,255,255,0.02); color:inherit; border:1px solid rgba(255,255,255,0.04); min-width:140px; }
+    .timer-display { font-weight:800; font-size:15px; margin-left:6px; }
+
+    /* main area */
+    .main { flex:1; display:flex; flex-direction:column; gap:12px; overflow:auto; padding-right:6px; }
+    .tabs-top { display:flex; gap:8px; }
+    .tab-btn { padding:8px 12px; border-radius:10px; background:rgba(0,0,0,0.35); color:var(--muted); border:1px solid rgba(255,255,255,0.02); cursor:pointer; font-weight:700; }
+    .tab-btn.active{ background:linear-gradient(90deg,var(--accent1),var(--accent3)); color:#042022; box-shadow:0 10px 30px rgba(110,92,255,0.12); }
+
+    .content-area { background:transparent; padding:6px; display:block; }
+
+    /* tasks list */
+    .tasks .task-row{ display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:10px; background:rgba(255,255,255,0.01); margin-bottom:8px; border:1px solid rgba(255,255,255,0.02); }
+    .task-row .meta{ font-size:13px; color:var(--muted); }
+
+    /* calendar */
+    .cal-controls{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px; }
+    .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-cell{ min-height:72px; padding:8px; border-radius:8px; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; }
+    .cal-num{ font-weight:700; font-size:13px; margin-bottom:6px; }
+    .cal-badge{ margin-top:auto; font-size:12px; padding:4px 6px; border-radius:999px; background:rgba(255,255,255,0.02); align-self:flex-end; }
+
+    /* responsive adjustments */
+    @media (max-width:980px){
+      .body{ flex-direction:column; padding:12px; }
+      .sidebar{ width:100%; max-width:none; order:2; }
+      .main{ order:1; }
+      .cal-cell{ min-height:56px; }
+    }
+    @media (max-width:480px){
+      header.top { padding:10px; }
+      .logo{ width:40px; height:40px; font-size:16px; }
+      .sidebar{ padding:8px; }
     }
 
-    .error { color: #ff4444; margin-top: 10px; text-shadow: 0 0 8px #ff0000; }
-
-    /* Вкладки */
-    .tabs {
-      display: flex;
-      justify-content: center;
-      margin: 10px 0;
-    }
-    .tab {
-      margin: 0 5px;
-      padding: 10px 20px;
-      cursor: pointer;
-      border-radius: 10px;
-      background: #111;
-      box-shadow: 0 0 10px #4a00e0;
-      transition: 0.3s;
-    }
-    .tab:hover { box-shadow: 0 0 15px #8e2de2; }
-    .tab.active {
-      background: #4a00e0;
-      box-shadow: 0 0 20px #8e2de2;
-    }
-
-    .content {
-      flex: 1;
-      width: 100%;
-      padding: 20px;
-      overflow-y: auto;
-      animation: fadeIn 0.5s ease;
-    }
-
-    /* Статы */
-    .stat-bar { margin: 15px 0; }
-    .bar {
-      height: 22px;
-      background: #222;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: inset 0 0 10px #000;
-    }
-    .bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #4a00e0, #8e2de2);
-      box-shadow: 0 0 15px #8e2de2;
-      transition: width 0.5s ease;
-    }
-
-    /* Календарь */
-    .calendar-day {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
-      margin: 2px;
-      border-radius: 6px;
-      box-shadow: 0 0 8px #111;
-    }
-    .red { background: #e74c3c; box-shadow: 0 0 10px #e74c3c; }
-    .yellow { background: #f1c40f; box-shadow: 0 0 10px #f1c40f; }
-    .green { background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
-
-    .task { margin: 8px 0; }
+    /* subtle animations */
+    .fade-in { animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(6px)} to {opacity:1; transform:none} }
   </style>
 </head>
 <body>
-  <!-- Экран входа -->
-  <div class="login-container" id="login">
-    <h2>Введите пароль</h2>
-    <input type="password" id="password" placeholder="Пароль">
-    <button onclick="checkPassword()">Войти</button>
-    <div class="error" id="error"></div>
-  </div>
-
-  <!-- Система -->
-  <div class="system hidden" id="system">
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('stats')">Статы</div>
-      <div class="tab" onclick="showTab('tasks')">Задания</div>
-      <div class="tab" onclick="showTab('skills')">Навыки</div>
-      <div class="tab" onclick="showTab('calendar')">Календарь</div>
-      <div class="tab" onclick="showTab('missed')">Пропущенные намазы</div>
-    </div>
-
-    <div class="content">
-      <!-- Статы -->
-      <div id="stats">
-        <h2>Статы</h2>
-        <div class="stat-bar">Сила <div class="bar"><div class="bar-fill" id="strength"></div></div></div>
-        <div class="stat-bar">Интеллект <div class="bar"><div class="bar-fill" id="intellect"></div></div></div>
-        <div class="stat-bar">Духовность <div class="bar"><div class="bar-fill" id="spirit"></div></div></div>
-        <div class="stat-bar">Ловкость <div class="bar"><div class="bar-fill" id="agility"></div></div></div>
-        <div class="stat-bar">Харизма <div class="bar"><div class="bar-fill" id="charisma"></div></div></div>
-        <div class="stat-bar">Выносливость <div class="bar"><div class="bar-fill" id="endurance"></div></div></div>
-        <h3>Уровень: <span id="level">1</span></h3>
-        <div class="stat-bar">Прогресс уровня <div class="bar"><div class="bar-fill" id="level-progress"></div></div></div>
-      </div>
-
-      <!-- Задания -->
-      <div id="tasks" class="hidden">
-        <h2>Ежедневные задания</h2>
-        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Фаджр</div>
-        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Зухр</div>
-        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Аср</div>
-        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Магриб</div>
-        <div class="task"><input type="checkbox" onchange="addXP('spirit',0.5)"> Иша</div>
-        <div class="task"><input type="checkbox" onchange="addXP('strength',0.5)"> Упражнение (15 мин)</div>
-      </div>
-
-      <!-- Навыки -->
-      <div id="skills" class="hidden">
-        <h2>Навыки</h2>
-        <div class="task">
-          <span>Математика</span>
-          <button onclick="startTimer('math')">Старт</button>
-          <button onclick="stopTimer('math')">Стоп</button>
-          <span id="math-timer">0</span> мин
-        </div>
-      </div>
-
-      <!-- Календарь -->
-      <div id="calendar" class="hidden">
-        <h2>Календарь</h2>
+  <div class="app">
+    <!-- HEADER -->
+    <header class="top">
+      <div class="brand">
+        <div class="logo">SL</div>
         <div>
-          <button onclick="renderCalendar('month')">Месяц</button>
-          <button onclick="renderCalendar('year')">Год</button>
+          <div class="title">SoloLeveling · Tracker</div>
+          <div class="subtitle">Твой личный RPG-трекер — задания, навыки, календарь</div>
         </div>
-        <div id="calendar-grid"></div>
       </div>
 
-      <!-- Пропущенные намазы -->
-      <div id="missed" class="hidden">
-        <h2>Пропущенные намазы</h2>
-        <p>Осталось дней: <span id="missed-count">658</span></p>
-        <div id="missed-prayers">
-          <input type="checkbox" id="m-fajr"> Фаджр<br>
-          <input type="checkbox" id="m-zuhr"> Зухр<br>
-          <input type="checkbox" id="m-asr"> Аср<br>
-          <input type="checkbox" id="m-maghrib"> Магриб<br>
-          <input type="checkbox" id="m-isha"> Иша<br>
-        </div>
-        <button onclick="completeMissed()">Завершить день</button>
+      <div class="login-box">
+        <input id="passInput" type="password" placeholder="Пароль">
+        <button id="loginBtn" class="btn">Войти</button>
+        <button id="logoutBtn" class="ghost" style="display:none">Выйти</button>
+        <div id="loginError" class="error"></div>
       </div>
+    </header>
+
+    <!-- BODY -->
+    <div class="body">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <!-- STATS PANEL -->
+        <div class="panel stats-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:800">Главная — Статы</div>
+            <div class="small-muted">Уровень: <span id="levelLabel">1</span></div>
+          </div>
+          <div class="stats-list" style="margin-top:8px">
+            <div class="stat-row"><div class="label">Сила</div><div class="small-muted" id="val_strength">0</div></div>
+            <div class="progress"><div id="fill_strength" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div class="stat-row"><div class="label">Интеллект</div><div class="small-muted" id="val_intellect">0</div></div>
+            <div class="progress"><div id="fill_intellect" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div class="stat-row"><div class="label">Духовность</div><div class="small-muted" id="val_spirit">0</div></div>
+            <div class="progress"><div id="fill_spirit" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div class="stat-row"><div class="label">Выносливость</div><div class="small-muted" id="val_endurance">0</div></div>
+            <div class="progress"><div id="fill_endurance" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div class="stat-row"><div class="label">Ловкость</div><div class="small-muted" id="val_agility">0</div></div>
+            <div class="progress"><div id="fill_agility" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div class="stat-row"><div class="label">Харизма</div><div class="small-muted" id="val_charisma">0</div></div>
+            <div class="progress"><div id="fill_charisma" class="fill bar-fill" style="width:0%"></div></div>
+
+            <div style="margin-top:10px">
+              <div class="small-muted">Общий XP: <span id="totalXP">0</span> / 150</div>
+              <div class="progress" style="margin-top:6px"><div id="fill_total" class="fill bar-fill" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SKILLS & TIMER -->
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:800">Навык — таймер</div>
+            <div class="small-muted" id="periodInfo">Период: 0 мес</div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label class="small-muted">Выбрать навык</label>
+            <div class="skills-select" style="margin-top:8px;">
+              <select id="skillSelect"></select>
+              <button id="startTimer" class="btn">Старт</button>
+              <button id="stopTimer" class="ghost">Стоп</button>
+              <div class="timer-display" id="timerDisplay">00:00</div>
+            </div>
+            <div class="small-muted" style="margin-top:8px">1 мин = 0.5 XP</div>
+          </div>
+        </div>
+
+        <!-- MISSED PRAYERS PANEL -->
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:800">Пропущенные намазы</div>
+            <div class="small-muted">Дни: <span id="missedCounter">620</span></div>
+          </div>
+          <div style="margin-top:8px" id="missedChecks">
+            <label><input type="checkbox" data-miss="fajr"> Фаджр</label><br>
+            <label><input type="checkbox" data-miss="zuhr"> Зухр</label><br>
+            <label><input type="checkbox" data-miss="asr"> Аср</label><br>
+            <label><input type="checkbox" data-miss="maghrib"> Магриб</label><br>
+            <label><input type="checkbox" data-miss="isha"> Иша</label><br>
+            <div style="margin-top:8px"><button id="closeMissed" class="btn">Закрыть день (−1)</button></div>
+            <div class="small-muted" style="margin-top:8px">Учтены месячные автоматически при вводе стартовой даты.</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="tabs-top">
+            <button class="tab-btn active" data-tab="main">Главная</button>
+            <button class="tab-btn" data-tab="daily">Ежедневные</button>
+            <button class="tab-btn" data-tab="calendar">Календарь</button>
+            <button class="tab-btn" data-tab="skills">Навыки</button>
+            <button class="tab-btn" data-tab="settings">Настройки</button>
+          </div>
+          <div class="small-muted">Сохраняется локально</div>
+        </div>
+
+        <div class="content-area" id="mainContent">
+          <!-- TAB: Главная -->
+          <div class="tab-content" id="tab-main">
+            <h3>Главная</h3>
+            <p class="small-muted">Здесь отображаются статы, общий прогресс и уровень.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+              <div class="panel" style="flex:1;min-width:240px">
+                <div style="font-weight:800">Общий уровень</div>
+                <div style="font-size:28px;font-weight:800;margin-top:6px" id="levelLabelBig">1</div>
+                <div class="small-muted" style="margin-top:8px">Когда общий XP достигает 150 — уровень повышается.</div>
+                <div style="margin-top:10px" class="progress"><div id="fill_total_big" class="fill bar-fill" style="width:0%"></div></div>
+                <div style="margin-top:8px" class="small-muted">Общий XP: <span id="totalXPBig">0</span>/150</div>
+              </div>
+
+              <div class="panel" style="min-width:260px">
+                <div style="font-weight:800">Краткая статистика</div>
+                <div style="margin-top:8px" id="miniStats"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Daily -->
+          <div class="tab-content hidden" id="tab-daily">
+            <h3>Ежедневные задания</h3>
+            <p class="small-muted">Отмечай каждый намаз отдельно. Каждое выполненное — +0.5 XP к соответствующему стату.</p>
+            <div class="tasks" id="tasksList" style="margin-top:12px"></div>
+            <div style="margin-top:8px"><button id="refreshTasks" class="ghost">Обновить задачи на сегодня</button></div>
+          </div>
+
+          <!-- TAB: Calendar -->
+          <div class="tab-content hidden" id="tab-calendar">
+            <h3>Календарь</h3>
+            <div class="cal-controls">
+              <div>
+                <button id="prevBtn" class="ghost">◀</button>
+                <button id="nextBtn" class="ghost">▶</button>
+                <span id="calTitle" style="margin-left:10px;font-weight:700"></span>
+              </div>
+              <div>
+                <button id="viewToggle" class="ghost">Месяц/Год</button>
+              </div>
+            </div>
+            <div id="calGrid" class="cal-grid"></div>
+          </div>
+
+          <!-- TAB: Skills -->
+          <div class="tab-content hidden" id="tab-skills">
+            <h3>Навыки (выбери доступный)</h3>
+            <div class="small-muted">Доступные навыки зависят от периода (полугодий). Английский и арабский — доступны весь год.</div>
+            <div style="margin-top:8px" id="skillsList"></div>
+          </div>
+
+          <!-- TAB: Settings -->
+          <div class="tab-content hidden" id="tab-settings">
+            <h3>Настройки</h3>
+            <div class="small-muted">Стартовая дата для расчёта периодов (если хочешь задать).</div>
+            <div style="margin-top:8px">
+              <label>Дата старта: <input type="date" id="startDateInput"></label>
+              <div style="margin-top:8px">
+                <label>Начальный счётчик пропущенных дней: <input type="number" id="missedInit" min="0" style="width:110px"></label>
+                <button id="applySettings" class="btn">Применить</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
     </div>
   </div>
 
-  <script>
-    const PASSWORD = "2309";
-    let stats = JSON.parse(localStorage.getItem("stats")) || {
-      strength:0, intellect:0, spirit:0, agility:0, charisma:0, endurance:0, level:1, levelXP:0
-    };
-    let missedCount = JSON.parse(localStorage.getItem("missedCount")) || 658;
-    let timers = {};
+<script>
+/* =========================
+   Configuration & constants
+   ========================= */
+const PASSWORD = "2309";
+const TASK_XP = 0.5;              // XP per task completion
+const MIN_XP_PER_MIN = 0.5;      // timer: 1 min = 0.5 XP
+const LEVEL_XP = 150;            // XP needed to level up
+const INITIAL_MISSED = 620;      // start missed days
 
-    function checkPassword() {
-      const input = document.getElementById("password").value;
-      if (input === PASSWORD) {
-        document.getElementById("login").classList.add("hidden");
-        document.getElementById("system").classList.remove("hidden");
-        updateStats();
-        updateMissed();
-      } else {
-        document.getElementById("error").innerText = "Неверный пароль";
+// full skill list (user's list)
+const ALL_SKILLS = [
+  "математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование",
+  "физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение",
+  "химия","Коран (5 аятов)","ақида","фиқх","тасаууф","критическое мышление","копирайтинг","скорость",
+  "английский","арабский"
+];
+
+// waves (per half-year)
+const WAVES = {
+  0: ["математика","гибкость","изящность","дисциплина","финансовая грамотность","рисование"],
+  1: ["физика","рукопашный бой","стрессоустойчивость","чистоплотность","ораторство","скорочтение"],
+  2: ["химия","Коран (5 аятов)","ақида","фиқх","тасаууф","критическое мышление","копирайтинг","скорость"]
+};
+const ALWAYS = ["английский","арабский"];
+
+// map skill => stat for giving stat XP
+const SKILL_TO_STAT = {
+  "математика":"intellect",
+  "гибкость":"agility",
+  "изящность":"charisma",
+  "дисциплина":"endurance",
+  "финансовая грамотность":"intellect",
+  "рисование":"charisma",
+  "физика":"intellect",
+  "рукопашный бой":"strength",
+  "стрессоустойчивость":"endurance",
+  "чистоплотность":"endurance",
+  "ораторство":"charisma",
+  "скорочтение":"intellect",
+  "химия":"intellect",
+  "Коран (5 аятов)":"spirit",
+  "ақида":"spirit",
+  "фиқх":"spirit",
+  "тасаууф":"spirit",
+  "критическое мышление":"intellect",
+  "копирайтинг":"intellect",
+  "скорость":"agility",
+  "английский":"intellect",
+  "арабский":"intellect"
+};
+
+/* =========================
+   State (persisted to localStorage)
+   ========================= */
+const LS_KEY = "solo_leveling_tracker_v2";
+let state = JSON.parse(localStorage.getItem(LS_KEY)) || {
+  startDate: new Date().toISOString().slice(0,10),
+  stats: { strength:0, intellect:0, spirit:0, endurance:0, agility:0, charisma:0 },
+  totalXP: 0,
+  level: 1,
+  tasksByDay: {},   // yyyy-mm-dd => array of tasks (objects)
+  calendar: {},     // yyyy-mm-dd => doneCount
+  missed: { counter: INITIAL_MISSED, partial: {} }, // partial holds which checkboxes for current 'closing' day if any
+  skillsXP: {},     // skill => xp
+  timers: {}        // skill => accumulated minutes displayed (not running)
+};
+saveState();
+
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+/* =========================
+   Helpers
+   ========================= */
+function isoToday(){ return new Date().toISOString().slice(0,10); }
+function formatMonthYear(y,m){ return new Date(y,m,1).toLocaleString('ru',{month:'long', year:'numeric'}); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function monthDiff(a,b){
+  return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth());
+}
+
+/* =========================
+   Login
+   ========================= */
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const passInput = document.getElementById("passInput");
+const loginError = document.getElementById("loginError");
+
+loginBtn.addEventListener("click", ()=>{ if(passInput.value===PASSWORD) { onLogin(); } else loginError.innerText="Неверный пароль"; });
+passInput.addEventListener("keyup",(e)=>{ if(e.key==="Enter") loginBtn.click(); });
+logoutBtn.addEventListener("click", ()=>{ location.reload(); });
+
+function onLogin(){
+  document.querySelector('.app').scrollIntoView({behavior:'smooth'});
+  document.getElementById("loginError").innerText="";
+  document.getElementById("passInput").value="";
+  document.getElementById("loginBtn").style.display="none";
+  document.getElementById("logoutBtn").style.display="inline-block";
+  // remove login UI and show main
+  document.querySelector('.body').style.display='flex';
+  // render UI
+  updatePeriodInfo();
+  renderSidebarStats();
+  prepareTodayTasksIfMissing();
+  renderTasksList();
+  populateSkillSelect();
+  renderSkillsList();
+  renderCalendar(); // default month
+  showTabBtn('main');
+}
+
+/* On load hide main body until login (security-by-obscurity) */
+document.querySelector('.body').style.display='none';
+
+/* =========================
+   Sidebar & stats rendering
+   ========================= */
+function renderSidebarStats(){
+  // update small values and fills
+  const s = state.stats;
+  document.getElementById('val_strength').innerText = Math.round(s.strength*100)/100;
+  document.getElementById('fill_strength').style.width = Math.min(s.strength,100) + "%";
+
+  document.getElementById('val_intellect').innerText = Math.round(s.intellect*100)/100;
+  document.getElementById('fill_intellect').style.width = Math.min(s.intellect,100) + "%";
+
+  document.getElementById('val_spirit').innerText = Math.round(s.spirit*100)/100;
+  document.getElementById('fill_spirit').style.width = Math.min(s.spirit,100) + "%";
+
+  document.getElementById('val_endurance').innerText = Math.round(s.endurance*100)/100;
+  document.getElementById('fill_endurance').style.width = Math.min(s.endurance,100) + "%";
+
+  document.getElementById('val_agility').innerText = Math.round(s.agility*100)/100;
+  document.getElementById('fill_agility').style.width = Math.min(s.agility,100) + "%";
+
+  document.getElementById('val_charisma').innerText = Math.round(s.charisma*100)/100;
+  document.getElementById('fill_charisma').style.width = Math.min(s.charisma,100) + "%";
+
+  // level & total
+  document.getElementById('levelLabel').innerText = state.level;
+  document.getElementById('totalXP').innerText = Math.round(state.totalXP*100)/100;
+  const pct = Math.min(100, (state.totalXP/LEVEL_XP)*100);
+  document.getElementById('fill_total').style.width = pct + "%";
+  document.getElementById('levelLabelBig').innerText = state.level;
+  document.getElementById('totalXPBig').innerText = Math.round(state.totalXP*100)/100;
+  document.getElementById('fill_total_big').style.width = pct + "%";
+
+  // mini stats
+  document.getElementById('miniStats').innerHTML =
+    `<div class="small-muted">Сила: ${Math.round(s.strength*100)/100}</div>
+     <div class="small-muted">Интеллект: ${Math.round(s.intellect*100)/100}</div>
+     <div class="small-muted">Духовность: ${Math.round(s.spirit*100)/100}</div>`;
+}
+
+/* When gaining XP, update stats, totalXP, and level up */
+function grantXPToStat(statKey, xp){
+  if(!state.stats[statKey]) state.stats[statKey]=0;
+  state.stats[statKey] += xp;
+  state.totalXP += xp;
+  // level up loop (in case XP > level threshold)
+  while (state.totalXP >= LEVEL_XP){
+    state.level++;
+    state.totalXP -= LEVEL_XP;
+  }
+  saveState(); renderSidebarStats();
+}
+
+/* =========================
+   Tasks generation & handling
+   ========================= */
+function prepareTodayTasksIfMissing(dateIso){
+  const day = dateIso || isoToday();
+  if(state.tasksByDay[day]) return;
+  // create tasks for the day
+  const tasks = [];
+  // separate prayers
+  const prayers = ["Фаджр","Зухр","Аср","Магриб","Иша"];
+  prayers.forEach(p => {
+    tasks.push({ id: day + "_pr_" + p, type: "prayer", title:p, stat: "spirit", xp: TASK_XP, done:false });
+  });
+  // 15 min exercise
+  tasks.push({ id: day + "_exercise", type:"exercise", title:"15 мин упражнение", stat:"strength", xp: TASK_XP, durationMin:15, done:false });
+  // 20% chance oraza
+  if(Math.random() < 0.2){
+    tasks.push({ id: day + "_oraza", type:"oraza", title:"Ораза (шанс)", stat:"spirit", xp: TASK_XP, done:false });
+  }
+  // two random skill tasks from available (exclude spirit-only ones)
+  const avail = getAvailableSkillsForDay(day).filter(s => s !== "Коран (5 аятов)");
+  shuffle(avail);
+  const picks = avail.slice(0,2);
+  picks.forEach((s,idx)=>{
+    tasks.push({ id: day + "_skill_"+idx, type:"skill", title: "Навыковое: " + s, skill: s, stat: SKILL_TO_STAT[s] || "intellect", xp: TASK_XP, done:false });
+    if(!state.skillsXP[s]) state.skillsXP[s]=0;
+  });
+
+  state.tasksByDay[day] = tasks;
+  saveState();
+}
+
+/* render tasks list in daily tab */
+function renderTasksList(dateIso){
+  const day = dateIso || isoToday();
+  prepareTodayTasksIfMissing(day);
+  const tasks = state.tasksByDay[day] || [];
+  const container = document.getElementById("tasksList");
+  container.innerHTML = "";
+  tasks.forEach(t=>{
+    const row = document.createElement("div");
+    row.className = "task-row";
+    row.innerHTML = `<div>
+        <div style="font-weight:700">${t.title}</div>
+        <div class="meta small-muted">${t.type === "skill" ? "Навык: "+t.skill : t.type}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${t.durationMin ? `<div class="small-muted">${t.durationMin} мин</div>` : ""}
+        <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${t.done?"checked":""} data-id="${t.id}"> Выполнено</label>
+      </div>`;
+    container.appendChild(row);
+
+    const chk = row.querySelector('input[type="checkbox"]');
+    chk.addEventListener("change", (e)=>{
+      toggleTaskDone(day, t.id, e.target.checked);
+    });
+  });
+}
+
+/* toggle task done */
+function toggleTaskDone(day, id, done){
+  const tasks = state.tasksByDay[day] || [];
+  const t = tasks.find(x => x.id === id);
+  if(!t) return;
+  if(done && !t.done){
+    // grant xp
+    if(t.type === "skill"){
+      state.skillsXP[t.skill] = (state.skillsXP[t.skill]||0) + t.xp;
+      grantXPToStat(t.stat, t.xp);
+    } else {
+      grantXPToStat(t.stat, t.xp);
+    }
+    t.done = true;
+    // update calendar doneCount
+    if(!state.calendar[day]) state.calendar[day] = { doneCount: 0, tasks: [] };
+    state.calendar[day].doneCount = (state.calendar[day].doneCount||0) + 1;
+    state.calendar[day].tasks.push(id);
+  } else if(!done && t.done){
+    // undo (best-effort)
+    t.done = false;
+    if(!state.calendar[day]) state.calendar[day] = { doneCount: 0, tasks: [] };
+    state.calendar[day].doneCount = Math.max(0, (state.calendar[day].doneCount||1) - 1);
+    const idx = (state.calendar[day].tasks || []).indexOf(id);
+    if(idx>-1) state.calendar[day].tasks.splice(idx,1);
+    // try to subtract xp (not perfectly reversible but ok)
+    if(t.type === "skill"){
+      state.skillsXP[t.skill] = Math.max(0, (state.skillsXP[t.skill]||0) - t.xp);
+      state.stats[t.stat] = Math.max(0, (state.stats[t.stat]||0) - t.xp);
+      state.totalXP = Math.max(0, state.totalXP - t.xp);
+    } else {
+      state.stats[t.stat] = Math.max(0, (state.stats[t.stat]||0) - t.xp);
+      state.totalXP = Math.max(0, state.totalXP - t.xp);
+    }
+    // level recalculation (if XP went down below threshold we keep level same, it's simpler)
+  }
+  saveState();
+  renderTasksList(day);
+  renderCalendar();
+  renderSidebarStats();
+}
+
+/* refresh tasks (regenerate today) */
+document.getElementById("refreshTasks").addEventListener("click", ()=>{
+  delete state.tasksByDay[isoToday()];
+  prepareTodayTasksIfMissing();
+  renderTasksList();
+});
+
+/* =========================
+   Periods & available skills
+   ========================= */
+function getAvailableSkillsForDay(dateIso){
+  const start = new Date(state.startDate);
+  const target = new Date(dateIso || isoToday());
+  const months = monthDiff(start,target);
+  const waveIndex = Math.min(2, Math.floor(months/6));
+  const wave = WAVES[waveIndex] || [];
+  const result = Array.from(new Set([...ALWAYS, ...wave]));
+  // keep order of ALL_SKILLS
+  return ALL_SKILLS.filter(s => result.includes(s));
+}
+
+/* update period info in UI */
+function updatePeriodInfo(){
+  const start = new Date(state.startDate);
+  const months = monthDiff(start,new Date());
+  document.getElementById('periodInfo').innerText = `Прошло ${months} мес`;
+}
+
+/* =========================
+   Skill selector & timer
+   ========================= */
+let timerState = { running:false, skill:null, seconds:0, interval:null };
+
+function populateSkillSelect(){
+  const sel = document.getElementById("skillSelect");
+  sel.innerHTML = "";
+  const avail = getAvailableSkillsForDay();
+  avail.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value=s; opt.textContent=s;
+    sel.appendChild(opt);
+    if(!state.skillsXP[s]) state.skillsXP[s]=0;
+  });
+  // ensure timers state for shown skills
+  avail.forEach(s=>{ if(!state.timers[s]) state.timers[s]=0; });
+}
+
+document.getElementById("startTimer").addEventListener("click", ()=>{
+  if(timerState.running) return;
+  const skill = document.getElementById("skillSelect").value;
+  if(!skill) return alert("Выбери навык");
+  timerState.running=true; timerState.skill=skill; timerState.seconds=0;
+  document.getElementById("startTimer").disabled=true;
+  document.getElementById("stopTimer").disabled=false;
+  timerState.interval = setInterval(()=>{
+    timerState.seconds++;
+    updateTimerDisplay();
+  },1000);
+});
+
+document.getElementById("stopTimer").addEventListener("click", ()=>{
+  if(!timerState.running) return;
+  clearInterval(timerState.interval);
+  const minutes = Math.floor(timerState.seconds/60);
+  if(minutes>0){
+    const gain = minutes * MIN_XP_PER_MIN;
+    state.skillsXP[timerState.skill] = (state.skillsXP[timerState.skill]||0) + gain;
+    grantXPToStat(SKILL_TO_STAT[timerState.skill] || "intellect", gain);
+    alert(`+${gain} XP к навыку ${timerState.skill}`);
+  } else {
+    alert("Меньше минуты — XP не начислено");
+  }
+  timerState.running=false; timerState.skill=null; timerState.seconds=0;
+  document.getElementById("startTimer").disabled=false;
+  document.getElementById("stopTimer").disabled=true;
+  updateTimerDisplay();
+  saveState();
+  renderSkillsList();
+});
+
+function updateTimerDisplay(){
+  const s = timerState.seconds;
+  const mm = pad(Math.floor(s/60));
+  const ss = pad(s%60);
+  document.getElementById("timerDisplay").innerText = `${mm}:${ss}`;
+}
+
+/* render skills list area */
+function renderSkillsList(){
+  const box = document.getElementById("skillsList");
+  box.innerHTML = "";
+  const avail = getAvailableSkillsForDay();
+  avail.forEach(s=>{
+    const el = document.createElement("div");
+    el.className = "panel fade-in";
+    el.style.marginBottom="8px";
+    const xp = Math.round((state.skillsXP[s]||0)*100)/100;
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800">${s}</div>
+      <div class="small-muted">${xp} XP</div>
+    </div>
+    <div style="margin-top:6px" class="progress"><div class="fill bar-fill" style="width:${Math.min(100,(xp%100))}%"></div></div>`;
+    box.appendChild(el);
+  });
+}
+
+/* =========================
+   Missed prayers block
+   ========================= */
+function renderMissedCounter(){
+  document.getElementById("missedCounter").innerText = state.missed.counter;
+  // restore checkboxes if partial saved
+  const checks = document.querySelectorAll('#missedChecks input[type="checkbox"]');
+  checks.forEach(cb=>{
+    const key = cb.getAttribute('data-miss');
+    cb.checked = !!state.missed.partial[key];
+  });
+}
+document.getElementById("closeMissed").addEventListener("click", ()=>{
+  // if all five checked -> decrement counter and clear partial
+  const keys = ["fajr","zuhr","asr","maghrib","isha"];
+  const all = keys.every(k => {
+    const cb = document.querySelector(`#missedChecks input[data-miss="${k}"]`);
+    return cb && cb.checked;
+  });
+  if(all && state.missed.counter>0){
+    state.missed.counter--;
+    state.missed.partial = {};
+    keys.forEach(k=>{
+      const cb = document.querySelector(`#missedChecks input[data-miss="${k}"]`);
+      if(cb) cb.checked=false;
+    });
+    saveState(); renderMissedCounter();
+  } else {
+    alert("Отметь все 5 намазов, чтобы закрыть день (или проверь счётчик).");
+  }
+});
+// save partial when toggling checkboxes
+document.querySelectorAll('#missedChecks input[type="checkbox"]').forEach(cb=>{
+  cb.addEventListener("change", ()=>{
+    const key = cb.getAttribute('data-miss');
+    state.missed.partial[key] = !!cb.checked;
+    saveState();
+  });
+});
+
+/* =========================
+   Calendar rendering (month/year)
+   ========================= */
+let calMode = 'month'; // or 'year'
+let shownYear = new Date().getFullYear();
+let shownMonth = new Date().getMonth();
+
+document.getElementById('viewToggle').addEventListener('click', ()=>{
+  calMode = calMode==='month' ? 'year' : 'month';
+  renderCalendar();
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(calMode==='month'){ shownMonth--; if(shownMonth<0){ shownMonth=11; shownYear--; } }
+  else { shownYear--; }
+  renderCalendar();
+});
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(calMode==='month'){ shownMonth++; if(shownMonth>11){ shownMonth=0; shownYear++; } }
+  else { shownYear++; }
+  renderCalendar();
+});
+
+function renderCalendar(){
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = "";
+  const title = document.getElementById('calTitle');
+  if(calMode==='month'){
+    title.innerText = formatMonthYear(shownYear, shownMonth);
+    const first = new Date(shownYear, shownMonth,1);
+    const startWeek = (first.getDay()+6)%7; // monday=0
+    const days = new Date(shownYear, shownMonth+1,0).getDate();
+    // empty cells
+    for(let i=0;i<startWeek;i++){ const e=document.createElement('div'); e.className='cal-cell'; grid.appendChild(e); }
+    for(let d=1; d<=days; d++){
+      const iso = `${shownYear}-${pad(shownMonth+1)}-${pad(d)}`;
+      const cell = createCalCell(iso, d);
+      grid.appendChild(cell);
+    }
+    // fill tail to complete row
+    const total = startWeek + days;
+    const rem = (7 - (total%7))%7;
+    for(let i=0;i<rem;i++){ const e=document.createElement('div'); e.className='cal-cell'; grid.appendChild(e); }
+  } else {
+    title.innerText = shownYear;
+    // show 12 mini-months (simpler)
+    for(let m=0;m<12;m++){
+      const mini = document.createElement('div'); mini.style.padding='8px'; mini.style.borderRadius='10px'; mini.style.background='rgba(255,255,255,0.01)'; mini.style.border='1px solid rgba(255,255,255,0.02)';
+      mini.innerHTML = `<div style="font-weight:700;margin-bottom:6px">${new Date(shownYear,m,1).toLocaleString('ru',{month:'short'})}</div>`;
+      const inr = document.createElement('div'); inr.style.display='grid'; inr.style.gridTemplateColumns='repeat(7,14px)'; inr.style.gap='4px';
+      const days = new Date(shownYear,m+1,0).getDate();
+      for(let d=1; d<=days; d++){
+        const iso = `${shownYear}-${pad(m+1)}-${pad(d)}`;
+        const cnt = state.calendar[iso] ? state.calendar[iso].doneCount : 0;
+        const s = document.createElement('div'); s.style.width='14px'; s.style.height='10px'; s.style.borderRadius='3px'; s.style.background = colorForCount(cnt);
+        inr.appendChild(s);
       }
+      mini.appendChild(inr);
+      grid.appendChild(mini);
     }
+  }
+}
 
-    function showTab(tab) {
-      document.querySelectorAll(".content > div").forEach(div => div.classList.add("hidden"));
-      document.getElementById(tab).classList.remove("hidden");
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add("active");
-    }
+function createCalCell(iso, day){
+  const cell = document.createElement('div');
+  cell.className='cal-cell';
+  const cnt = state.calendar[iso] ? state.calendar[iso].doneCount : 0;
+  const colorClass = colorForCountClass(cnt);
+  if(colorClass) cell.classList.add(colorClass);
+  cell.innerHTML = `<div class="cal-num">${day}</div><div style="flex:1"></div><div class="cal-badge">${cnt} / 9</div>`;
+  cell.addEventListener('click', ()=>{
+    const tasks = state.tasksByDay[iso] || [];
+    const text = tasks.length ? tasks.map(t=>`${t.title} — ${t.done? '✓' : '✗'}`).join('\n') : '(нет заданий)';
+    alert(`${iso}\nВыполнено: ${cnt}\nЗадания:\n${text}`);
+  });
+  return cell;
+}
 
-    function addXP(stat, amount) {
-      stats[stat] += amount;
-      stats.levelXP += amount;
-      if (stats.levelXP >= 150) {
-        stats.level++;
-        stats.levelXP = 0;
-      }
-      saveData();
-      updateStats();
-    }
+function colorForCountClass(n){
+  if(n <= 3) return 'red';
+  if(n <= 5) return 'yellow';
+  return 'green';
+}
+function colorForCount(n){
+  if(n <=3) return 'rgba(231,76,60,0.9)';
+  if(n <=5) return 'rgba(241,196,15,0.95)';
+  return 'rgba(46,204,113,0.9)';
+}
 
-    function updateStats() {
-      const max = 100;
-      for (let s of ["strength","intellect","spirit","agility","charisma","endurance"]) {
-        document.getElementById(s).style.width = Math.min(stats[s], max) + "%";
-      }
-      document.getElementById("level").innerText = stats.level;
-      document.getElementById("level-progress").style.width = (stats.levelXP/150*100)+"%";
-    }
+/* =========================
+   Utility funcs
+   ========================= */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-    function saveData() {
-      localStorage.setItem("stats", JSON.stringify(stats));
-      localStorage.setItem("missedCount", JSON.stringify(missedCount));
-    }
+/* =========================
+   UI wiring: tab buttons and initial rendering
+   ========================= */
+document.querySelectorAll('.tabs-top .tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabs-top .tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.add('hidden'));
+    document.getElementById('tab-'+t).classList.remove('hidden');
+    // extra actions
+    if(t==='daily') { renderTasksList(); }
+    if(t==='calendar') { renderCalendar(); }
+    if(t==='skills') { populateSkillSelect(); renderSkillsList(); }
+    if(t==='main') { renderSidebarStats(); }
+  });
+});
 
-    function startTimer(skill) {
-      if (timers[skill]) return;
-      timers[skill] = setInterval(() => {
-        let val = parseInt(document.getElementById(skill+"-timer").innerText);
-        document.getElementById(skill+"-timer").innerText = val+1;
-      },60000);
-    }
+/* helper to open tab by name */
+function showTabBtn(name){
+  const btn = Array.from(document.querySelectorAll('.tabs-top .tab-btn')).find(b=>b.getAttribute('data-tab')===name);
+  if(btn) btn.click();
+}
 
-    function stopTimer(skill) {
-      if (timers[skill]) {
-        clearInterval(timers[skill]);
-        let minutes = parseInt(document.getElementById(skill+"-timer").innerText);
-        addXP("intellect", minutes*0.5);
-        timers[skill] = null;
-      }
-    }
+/* =========================
+   Settings: start date & missed init
+   ========================= */
+document.getElementById('startDateInput').value = state.startDate;
+document.getElementById('missedInit').value = state.missed.counter;
+document.getElementById('applySettings').addEventListener('click', ()=>{
+  const sd = document.getElementById('startDateInput').value;
+  const mInit = parseInt(document.getElementById('missedInit').value) || state.missed.counter;
+  if(sd) state.startDate = sd;
+  state.missed.counter = mInit;
+  saveState();
+  updatePeriodInfo();
+  renderMissedCounter();
+  alert("Сохранено");
+});
 
-    function renderCalendar(mode) {
-      let grid = document.getElementById("calendar-grid");
-      grid.innerHTML = "";
-      let days = mode==="month"?30:365;
-      for (let i=1;i<=days;i++) {
-        let div = document.createElement("div");
-        div.className="calendar-day red";
-        grid.appendChild(div);
-      }
-    }
+/* =========================
+   Initial small render
+   ========================= */
+updatePeriodInfo();
+renderSidebarStats();
+renderMissedCounter();
+/* if you want to auto-login during dev, call onLogin(); */
 
-    function updateMissed() {
-      document.getElementById("missed-count").innerText = missedCount;
-    }
+/* Expose some functions to console for quick testing */
+window._state = state;
+window._save = saveState;
 
-    function completeMissed() {
-      let allChecked = ["m-fajr","m-zuhr","m-asr","m-maghrib","m-isha"].every(id => document.getElementById(id).checked);
-      if (allChecked && missedCount>0) {
-        missedCount--;
-        ["m-fajr","m-zuhr","m-asr","m-maghrib","m-isha"].forEach(id => document.getElementById(id).checked=false);
-        saveData();
-        updateMissed();
-      }
-    }
-  </script>
+</script>
 </body>
-</html>
+  </html>
